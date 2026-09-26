@@ -1,0 +1,4985 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+/>
+
+<title>마지막 길드 Prototype v2</title>
+
+<style>
+
+:root {
+    --bg:#15171b;
+    --panel:#22262d;
+    --panel2:#2c3139;
+    --panel3:#353b45;
+
+    --border:#454d59;
+
+    --text:#f3f3f3;
+    --sub:#adb5c2;
+
+    --gold:#e2b95b;
+    --danger:#d96565;
+    --good:#68bf7b;
+    --blue:#699ad9;
+}
+
+* {
+    box-sizing:border-box;
+}
+
+body {
+    margin:0;
+
+    background:var(--bg);
+    color:var(--text);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+button {
+    padding:8px 10px;
+
+    border-radius:7px;
+    border:1px solid #596171;
+
+    background:#353b46;
+    color:white;
+
+    cursor:pointer;
+}
+
+button:hover {
+    background:#414957;
+}
+
+button:disabled {
+    opacity:.35;
+    cursor:default;
+}
+
+#game {
+    width:min(100%,760px);
+
+    margin:auto;
+
+    padding:10px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+    display:grid;
+
+    grid-template-columns:
+        repeat(5,1fr);
+
+    gap:5px;
+
+    padding:9px;
+
+    background:var(--panel);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:9px;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:20;
+}
+
+.resource {
+    text-align:center;
+
+    font-size:11px;
+
+    color:var(--sub);
+}
+
+.resource strong {
+    display:block;
+
+    color:var(--text);
+
+    font-size:16px;
+}
+
+/* =========================
+   SECTIONS
+========================= */
+
+section {
+    margin-top:9px;
+
+    padding:10px;
+
+    background:var(--panel);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:9px;
+}
+
+h2 {
+    margin:
+        0 0 8px;
+
+    font-size:15px;
+}
+
+.small {
+    color:var(--sub);
+
+    font-size:11px;
+}
+
+.flex {
+    display:flex;
+
+    gap:6px;
+}
+
+.toolbar {
+    display:flex;
+
+    gap:6px;
+
+    flex-wrap:wrap;
+
+    margin-top:7px;
+}
+
+.toolbar button {
+    flex:1;
+}
+
+/* =========================
+   TOWN
+========================= */
+
+.town-info {
+    display:grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:6px;
+}
+
+.info-box {
+    padding:7px;
+
+    background:#191c21;
+
+    border-radius:6px;
+
+    text-align:center;
+
+    font-size:12px;
+}
+
+/* =========================
+   POWER
+========================= */
+
+.power-box {
+    display:grid;
+
+    grid-template-columns:
+        1fr auto 1fr;
+
+    gap:10px;
+
+    align-items:center;
+
+    text-align:center;
+}
+
+.power-number {
+    font-size:22px;
+
+    font-weight:700;
+}
+
+.safe {
+    color:#73ca83;
+}
+
+.normal {
+    color:#e7bf66;
+}
+
+.danger-text {
+    color:#e26d6d;
+}
+
+/* =========================
+   BATTLEFIELD
+========================= */
+
+.battlefield {
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+}
+
+.zone {
+    padding:7px;
+
+    background:#1c1f24;
+
+    border:
+        1px solid #3c434d;
+
+    border-radius:7px;
+}
+
+.zone-title {
+    margin-bottom:5px;
+
+    color:var(--sub);
+
+    font-size:11px;
+}
+
+.slots {
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:5px;
+}
+
+.slot {
+    height:66px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:3px;
+
+    border:
+        1px dashed #5c6471;
+
+    border-radius:6px;
+
+    color:#7f8791;
+
+    font-size:10px;
+
+    text-align:center;
+
+    cursor:pointer;
+}
+
+.slot.locked {
+    opacity:.25;
+
+    cursor:default;
+}
+
+.slot.occupied {
+    border-style:solid;
+
+    color:white;
+}
+
+.slot.possible {
+    border-color:#ddbb63;
+}
+
+.synergy {
+    margin-top:5px;
+
+    padding:5px;
+
+    border-radius:5px;
+
+    background:#313825;
+
+    color:#b9d997;
+
+    font-size:10px;
+}
+
+/* =========================
+   MANAGEMENT TABS
+========================= */
+
+.management-tabs {
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:5px;
+
+    margin-bottom:8px;
+}
+
+.management-tab {
+    padding:9px 4px;
+
+    text-align:center;
+
+    background:#292e36;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-size:12px;
+}
+
+.management-tab.active {
+    background:#514426;
+
+    border-color:#b18d3d;
+}
+
+.tab-content {
+    display:none;
+}
+
+.tab-content.active {
+    display:block;
+}
+
+.two-tabs {
+    grid-template-columns:
+        repeat(2,1fr);
+}
+
+/* =========================
+   ADVENTURER
+========================= */
+
+.adventurer-list {
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap:6px;
+}
+
+.card {
+    min-height:112px;
+
+    padding:7px;
+
+    background:var(--panel2);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:7px;
+
+    cursor:pointer;
+}
+
+.card.selected {
+    outline:
+        2px solid var(--gold);
+}
+
+.name {
+    font-weight:700;
+}
+
+.job {
+    display:inline-block;
+
+    margin-left:3px;
+
+    padding:
+        2px 5px;
+
+    border-radius:4px;
+
+    font-size:9px;
+}
+
+.warrior {
+    background:#8e4141;
+}
+
+.archer {
+    background:#397d4c;
+}
+
+.mage {
+    background:#466da7;
+}
+
+.hp {
+    height:5px;
+
+    margin-top:5px;
+
+    background:#563737;
+
+    border-radius:4px;
+
+    overflow:hidden;
+}
+
+.hp > div {
+    height:100%;
+
+    background:#6dbb76;
+}
+
+.stats {
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    margin-top:5px;
+
+    text-align:center;
+
+    font-size:9px;
+
+    color:#ccd2da;
+}
+
+/* =========================
+   QUEST
+========================= */
+
+.quest-list {
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap:6px;
+}
+
+.quest {
+    padding:7px;
+
+    background:var(--panel2);
+
+    border:
+        1px solid var(--border);
+
+    border-radius:7px;
+}
+
+.quest-rank {
+    font-size:9px;
+
+    color:#ddb959;
+}
+
+.quest button {
+    width:100%;
+
+    margin-top:5px;
+}
+
+/* =========================
+   GRAVE
+========================= */
+
+.grave {
+    padding:7px;
+
+    margin-bottom:5px;
+
+    background:#292929;
+
+    border:
+        1px solid #555;
+
+    border-radius:6px;
+}
+
+/* =========================
+   LOG
+========================= */
+
+.log {
+    height:140px;
+
+    overflow-y:auto;
+
+    padding:7px;
+
+    background:#101216;
+
+    border-radius:6px;
+
+    font-size:11px;
+
+    line-height:1.55;
+}
+
+/* =========================
+   GAME OVER
+========================= */
+
+.gameover {
+    border:
+        2px solid #ad5050;
+}
+
+.inherit-card {
+    padding:7px;
+
+    margin:5px 0;
+
+    background:#292e35;
+
+    border:
+        1px solid #555;
+
+    border-radius:5px;
+
+    cursor:pointer;
+}
+
+.inherit-card.selected {
+    background:#4c4227;
+
+    border-color:#dabb60;
+}
+
+.hidden {
+    display:none;
+}
+
+@media(max-width:500px) {
+
+    .adventurer-list,
+    .quest-list {
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+<header>
+
+<div class="resource">
+WAVE
+<strong id="wave"></strong>
+</div>
+
+<div class="resource">
+💰 GOLD
+<strong id="gold"></strong>
+</div>
+
+<div class="resource">
+💎 GEM
+<strong id="gem"></strong>
+</div>
+
+<div class="resource">
+🏰 HP
+<strong id="townHp"></strong>
+</div>
+
+<div class="resource">
+🏙️ 도시
+<strong id="townLevel"></strong>
+</div>
+
+</header>
+
+
+<!-- =========================
+     POWER
+========================= -->
+
+<section>
+
+<h2>⚔️ 다음 마왕군 공세</h2>
+
+<div class="power-box">
+
+<div>
+
+<div class="small">
+우리 방어력
+</div>
+
+<div
+    id="ourPower"
+    class="power-number">
+</div>
+
+</div>
+
+
+<div>
+
+<div
+    id="battlePrediction">
+</div>
+
+</div>
+
+
+<div>
+
+<div class="small">
+마왕군 전투력
+</div>
+
+<div
+    id="enemyPower"
+    class="power-number">
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================
+     DEFENSE
+========================= -->
+
+<section>
+
+<h2>🛡️ 방어선</h2>
+
+<div class="battlefield">
+
+<div class="zone">
+
+<div class="zone-title">
+🚪 마왕군 진입
+</div>
+
+</div>
+
+
+<div
+    class="zone"
+    id="line2Zone">
+
+<div class="zone-title">
+외곽 방어선 · 배치 2
+</div>
+
+<div
+    class="slots"
+    id="line2">
+</div>
+
+<div
+    id="line2Synergy"
+    class="synergy hidden">
+</div>
+
+</div>
+
+
+<div class="zone">
+
+<div class="zone-title">
+최종 방어선 · 배치 1
+</div>
+
+<div
+    class="slots"
+    id="line1">
+</div>
+
+<div
+    id="line1Synergy"
+    class="synergy hidden">
+</div>
+
+</div>
+
+
+<div class="zone">
+
+<div style="text-align:center">
+🏰 도시 중심
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     ADVENTURER / GRAVE
+========================= -->
+
+<section>
+
+<div class="management-tabs two-tabs">
+
+<div
+    id="tabAdventurer"
+    class="management-tab active"
+    onclick="openPeopleTab('adventurer')">
+👥 모험가
+</div>
+
+<div
+    id="tabGrave"
+    class="management-tab"
+    onclick="openPeopleTab('grave')">
+⚰️ 묘지
+</div>
+
+</div>
+
+
+<!-- ADVENTURERS -->
+
+<div
+    id="contentAdventurer"
+    class="tab-content active">
+
+<div
+    class="small"
+    id="waitingCount">
+</div>
+
+<div
+    id="waiting"
+    class="adventurer-list">
+</div>
+
+<div class="toolbar">
+
+<button onclick="hire()">
+모험가 고용
+💰<span id="hireCost"></span>
+</button>
+
+<button onclick="expandWaitingGold()">
+대기소 +1
+💰500
+</button>
+
+<button onclick="expandWaitingGem()">
+영구 +1
+💎5
+</button>
+
+</div>
+
+<div
+    id="selectedActions"
+    class="toolbar">
+</div>
+
+</div>
+
+
+<!-- GRAVE -->
+
+<div
+    id="contentGrave"
+    class="tab-content">
+
+<div
+    class="small"
+    id="graveCount">
+</div>
+
+<div id="graveyard"></div>
+
+<div class="toolbar">
+
+<button onclick="expandGraveGold()">
+묘지 +1 💰600
+</button>
+
+<button onclick="expandGraveGem()">
+영구 +1 💎5
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     TOWN / QUEST
+========================= -->
+
+<section>
+
+<div class="management-tabs two-tabs">
+
+<div
+    id="tabTown"
+    class="management-tab active"
+    onclick="openWorldTab('town')">
+🏙️ 도시
+</div>
+
+<div
+    id="tabQuest"
+    class="management-tab"
+    onclick="openWorldTab('quest')">
+🗺️ 퀘스트
+</div>
+
+</div>
+
+
+<!-- TOWN -->
+
+<div
+    id="contentTown"
+    class="tab-content active">
+
+<div class="town-info">
+
+<div class="info-box">
+도시 레벨
+<br>
+<strong id="townLevelCard"></strong>
+</div>
+
+<div class="info-box">
+방어 슬롯
+<br>
+<strong id="defenseSlotInfo"></strong>
+</div>
+
+<div class="info-box">
+퀘스트 슬롯
+<br>
+<strong id="questSlotInfo"></strong>
+</div>
+
+<div class="info-box">
+등장 퀘스트
+<br>
+<strong id="questRankInfo"></strong>
+</div>
+
+</div>
+
+<div class="toolbar">
+
+<button
+    id="townUpgradeButton"
+    onclick="upgradeTown()">
+</button>
+
+</div>
+
+<div
+    id="townNextInfo"
+    class="small">
+</div>
+
+</div>
+
+
+<!-- QUEST -->
+
+<div
+    id="contentQuest"
+    class="tab-content">
+
+<div
+    class="small"
+    id="questBoardInfo">
+</div>
+
+<div
+    id="quests"
+    class="quest-list">
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     LOG
+========================= -->
+
+<section>
+
+<h2>📜 길드 기록</h2>
+
+<div
+    class="log"
+    id="log">
+</div>
+
+<div class="toolbar">
+
+<button
+    id="waveButton"
+    onclick="nextWave()">
+▶ 다음 웨이브
+</button>
+
+</div>
+
+</section>
+
+
+<!-- =========================
+     GAME OVER
+========================= -->
+
+<section
+    id="gameOverPanel"
+    class="gameover hidden">
+
+<h2>
+☠️ 도시가 함락되었습니다
+</h2>
+
+<div class="small">
+
+묘지에 있는 사망자는 승계할 수 없습니다.
+살아남은 모험가 중 다음 길드로 데려갈 사람을 선택하세요.
+
+</div>
+
+<div id="inheritList"></div>
+
+<div class="toolbar">
+
+<button onclick="expandInheritance()">
+영구 승계 +1
+💎10
+</button>
+
+<button onclick="startNewRun()">
+새 도시에서 시작
+</button>
+
+</div>
+
+</section>
+
+
+<section>
+
+<h2>⚙️ Prototype</h2>
+
+<div class="small">
+
+모험가 선택 →
+방어 슬롯 선택 또는 퀘스트 파견.
+
+도시를 성장시키면 방어선과
+퀘스트 수준이 확장됩니다.
+
+</div>
+
+<div class="toolbar">
+
+<button onclick="resetSave()">
+저장 초기화
+</button>
+
+</div>
+
+</section>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   CONFIG
+===================================================== */
+
+const CONFIG = {
+
+    startGold:500,
+    startGem:20,
+
+    townHp:100,
+
+    baseWaiting:4,
+    baseGrave:3,
+    baseInheritance:1,
+
+    hireBaseCost:100,
+
+    reviveGold:800,
+    reviveGem:3,
+    reviveWaves:3,
+
+    waitingExpandGold:500,
+    graveExpandGold:600,
+
+    townUpgradeCosts:[
+        0,
+        350,
+        700,
+        1300,
+        2200,
+        3500
+    ],
+
+    enemyBase:28,
+    enemyGrowth:9
+};
+
+
+/* =====================================================
+   TOWN LEVEL
+===================================================== */
+
+const TOWN_LEVELS = {
+
+1:{
+    line1:1,
+    line2:0,
+
+    questSlots:1,
+    maxQuestRank:1
+},
+
+2:{
+    line1:2,
+    line2:0,
+
+    questSlots:2,
+    maxQuestRank:1
+},
+
+3:{
+    line1:3,
+    line2:1,
+
+    questSlots:2,
+    maxQuestRank:2
+},
+
+4:{
+    line1:3,
+    line2:2,
+
+    questSlots:3,
+    maxQuestRank:2
+},
+
+5:{
+    line1:3,
+    line2:3,
+
+    questSlots:3,
+    maxQuestRank:3
+}
+
+};
+
+
+/* =====================================================
+   JOBS
+===================================================== */
+
+const JOBS = {
+
+warrior:{
+    name:"전사",
+
+    hp:115,
+    attack:22,
+    defense:18,
+
+    colorClass:"warrior"
+},
+
+archer:{
+    name:"궁수",
+
+    hp:85,
+    attack:28,
+    defense:10,
+
+    colorClass:"archer"
+},
+
+mage:{
+    name:"마법사",
+
+    hp:72,
+    attack:34,
+    defense:7,
+
+    colorClass:"mage"
+}
+
+};
+
+
+/* =====================================================
+   NAMES
+===================================================== */
+
+const NAMES = [
+
+"아렌","리아","테오","세라",
+"로안","미라","엘린","루카",
+
+"카일","아델","레온","레이나",
+"테라","시아","렌","엘라",
+
+"라온","네아","에단","유리아",
+"카렌","벨","리오","제나",
+
+"루엔","셀린","데온","리엘",
+"에일","세인","노아","카엘"
+
+];
+
+
+/* =====================================================
+   QUEST POOL
+===================================================== */
+
+const QUEST_POOL = [
+
+{
+    rank:1,
+
+    name:"길 잃은 상인 구조",
+
+    duration:1,
+    expiry:2,
+
+    power:20,
+    reward:120
+},
+
+{
+    rank:1,
+
+    name:"고블린 정찰대 추적",
+
+    duration:1,
+    expiry:3,
+
+    power:25,
+    reward:150
+},
+
+{
+    rank:1,
+
+    name:"피난민 호위",
+
+    duration:2,
+    expiry:2,
+
+    power:30,
+    reward:210
+},
+
+{
+    rank:1,
+
+    name:"버려진 창고 조사",
+
+    duration:1,
+    expiry:2,
+
+    power:22,
+    reward:140
+},
+
+{
+    rank:2,
+
+    name:"오크 보급대 습격",
+
+    duration:2,
+    expiry:3,
+
+    power:50,
+    reward:380
+},
+
+{
+    rank:2,
+
+    name:"마왕군 전초기지 정찰",
+
+    duration:2,
+    expiry:2,
+
+    power:55,
+    reward:420
+},
+
+{
+    rank:2,
+
+    name:"포위된 마을 구조",
+
+    duration:3,
+    expiry:2,
+
+    power:65,
+    reward:520
+},
+
+{
+    rank:2,
+
+    name:"마법 재료 확보",
+
+    duration:2,
+    expiry:3,
+
+    power:58,
+    reward:460
+},
+
+{
+    rank:3,
+
+    name:"마왕군 장교 암살",
+
+    duration:3,
+    expiry:2,
+
+    power:90,
+    reward:850
+},
+
+{
+    rank:3,
+
+    name:"성채 생존자 구출",
+
+    duration:3,
+    expiry:3,
+
+    power:100,
+    reward:950
+},
+
+{
+    rank:3,
+
+    name:"마왕군 보급기지 파괴",
+
+    duration:4,
+    expiry:2,
+
+    power:110,
+    reward:1150
+}
+
+];
+
+
+/* =====================================================
+   GAME STATE
+===================================================== */
+
+let state=null;
+
+let selectedId=null;
+
+// let activeTab="adventurer";
+let activePeopleTab="adventurer";
+let activeWorldTab="town";
+
+
+/* =====================================================
+   META / RUN
+===================================================== */
+
+function createMeta(){
+
+return {
+
+    gem:CONFIG.startGem,
+
+    permanentWaiting:0,
+    permanentGrave:0,
+    permanentInheritance:0
+
+};
+
+}
+
+
+function createRun(meta){
+
+return {
+
+    meta,
+
+    wave:1,
+
+    gold:CONFIG.startGold,
+
+    townHp:CONFIG.townHp,
+
+    townLevel:1,
+
+    tempWaiting:0,
+    tempGrave:0,
+
+    adventurers:[],
+
+    line1:[
+        null,
+        null,
+        null
+    ],
+
+    line2:[
+        null,
+        null,
+        null
+    ],
+
+    questBoard:[],
+
+    activeQuests:[],
+
+    graveyard:[],
+
+    logs:[
+        "작은 도시의 마지막 길드가 문을 열었습니다."
+    ],
+
+    gameOver:false,
+
+    inheritanceSelection:[]
+
+};
+
+}
+
+
+/* =====================================================
+   UTILS
+===================================================== */
+
+function uid(){
+
+return (
+    Date.now().toString(36)
+    +
+    Math.random()
+    .toString(36)
+    .slice(2)
+);
+
+}
+
+
+function randomRange(min,max){
+
+return (
+    min +
+    Math.random()*
+    (max-min)
+);
+
+}
+
+
+function randomInt(min,max){
+
+return Math.floor(
+    randomRange(
+        min,
+        max+1
+    )
+);
+
+}
+
+
+function getAdv(id){
+
+return state.adventurers.find(
+    a=>a.id===id
+);
+
+}
+
+
+function log(text){
+
+state.logs.push(
+    `W${state.wave} · ${text}`
+);
+
+if(state.logs.length>100)
+    state.logs.shift();
+
+}
+
+
+/* =====================================================
+   CAPACITY
+===================================================== */
+
+function waitingCapacity(){
+
+return (
+    CONFIG.baseWaiting
+    +
+    state.meta.permanentWaiting
+    +
+    state.tempWaiting
+);
+
+}
+
+
+function graveCapacity(){
+
+return (
+    CONFIG.baseGrave
+    +
+    state.meta.permanentGrave
+    +
+    state.tempGrave
+);
+
+}
+
+
+function inheritanceCapacity(){
+
+return (
+    CONFIG.baseInheritance
+    +
+    state.meta.permanentInheritance
+);
+
+}
+
+
+function townData(){
+
+return TOWN_LEVELS[
+    state.townLevel
+];
+
+}
+
+
+/* =====================================================
+   NAME
+===================================================== */
+
+function generateUniqueName(){
+
+const used=
+    new Set(
+        state.adventurers.map(
+            a=>a.name
+        )
+    );
+
+const available=
+    NAMES.filter(
+        n=>!used.has(n)
+    );
+
+if(available.length>0){
+
+    return available[
+        randomInt(
+            0,
+            available.length-1
+        )
+    ];
+
+}
+
+return (
+    "모험가 "
+    +
+    (state.adventurers.length+1)
+);
+
+}
+
+
+/* =====================================================
+   ADVENTURER CREATION
+===================================================== */
+
+function createAdventurer(level=1){
+
+const jobKeys=
+    Object.keys(JOBS);
+
+const jobKey=
+    jobKeys[
+        randomInt(
+            0,
+            jobKeys.length-1
+        )
+    ];
+
+const base=
+    JOBS[jobKey];
+
+
+/*
+같은 클래스라도
+약 ±12% 정도 개체차
+*/
+
+const hpTalent=
+    randomRange(.88,1.12);
+
+const attackTalent=
+    randomRange(.88,1.12);
+
+const defenseTalent=
+    randomRange(.88,1.12);
+
+
+const maxHp=
+    Math.round(
+        (
+            base.hp
+            +
+            (level-1)*9
+        )
+        *
+        hpTalent
+    );
+
+
+const attack=
+    Math.round(
+        (
+            base.attack
+            +
+            (level-1)*4
+        )
+        *
+        attackTalent
+    );
+
+
+const defense=
+    Math.round(
+        (
+            base.defense
+            +
+            (level-1)*2
+        )
+        *
+        defenseTalent
+    );
+
+
+return {
+
+    id:uid(),
+
+    name:
+        generateUniqueName(),
+
+    job:jobKey,
+
+    level,
+
+    exp:0,
+
+    maxHp,
+
+    hp:maxHp,
+
+    attack,
+
+    defense,
+
+    talents:{
+        hp:hpTalent,
+        attack:attackTalent,
+        defense:defenseTalent
+    },
+
+    status:"waiting",
+
+    career:{
+
+        waves:0,
+        quests:0,
+        failedQuests:0,
+        inherited:0
+
+    },
+
+    reviveRemaining:0
+
+};
+
+}
+
+
+/* =====================================================
+   EXP
+===================================================== */
+
+function requiredExp(level){
+
+/*
+초반 빠른 성장
+*/
+
+return (
+    25
+    +
+    level*20
+    +
+    level*level*4
+);
+
+}
+
+
+function gainExp(adv,amount){
+
+adv.exp+=amount;
+
+
+while(
+    adv.exp>=
+    requiredExp(adv.level)
+){
+
+    adv.exp-=
+        requiredExp(
+            adv.level
+        );
+
+
+    adv.level++;
+
+
+    const base=
+        JOBS[adv.job];
+
+
+    adv.maxHp=
+        Math.round(
+            (
+                base.hp
+                +
+                (adv.level-1)*9
+            )
+            *
+            adv.talents.hp
+        );
+
+
+    adv.hp=
+        adv.maxHp;
+
+
+    adv.attack=
+        Math.round(
+            (
+                base.attack
+                +
+                (adv.level-1)*4
+            )
+            *
+            adv.talents.attack
+        );
+
+
+    adv.defense=
+        Math.round(
+            (
+                base.defense
+                +
+                (adv.level-1)*2
+            )
+            *
+            adv.talents.defense
+        );
+
+
+    log(
+        `${adv.name}이 Lv.${adv.level}이 되었습니다.`
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   HIRE
+===================================================== */
+
+function waitingAdventurers(){
+
+return state.adventurers.filter(
+    a=>a.status==="waiting"
+);
+
+}
+
+
+function hireCost(){
+
+return (
+    CONFIG.hireBaseCost
+    +
+    state.adventurers.length*15
+);
+
+}
+
+
+function hire(){
+
+if(state.gameOver)
+    return;
+
+
+if(
+    waitingAdventurers().length
+    >=
+    waitingCapacity()
+){
+
+    alert(
+        "모험가 대기소가 가득 찼습니다."
+    );
+
+    return;
+}
+
+
+const cost=
+    hireCost();
+
+
+if(state.gold<cost){
+
+    alert(
+        "골드가 부족합니다."
+    );
+
+    return;
+}
+
+
+state.gold-=cost;
+
+
+const adv=
+    createAdventurer();
+
+
+state.adventurers.push(
+    adv
+);
+
+
+log(
+    `${adv.name}(${JOBS[adv.job].name})이 길드에 가입했습니다.`
+);
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   DEFENSE SLOTS
+===================================================== */
+
+function activeSlots(line){
+
+const town=
+    townData();
+
+return (
+    line==="line1"
+    ?
+    town.line1
+    :
+    town.line2
+);
+
+}
+
+
+function assignSlot(line,index){
+
+if(
+    index>=
+    activeSlots(line)
+)
+    return;
+
+
+const slots=
+    state[line];
+
+
+if(slots[index]){
+
+    const adv=
+        getAdv(
+            slots[index]
+        );
+
+
+    if(adv){
+
+        adv.status=
+            "waiting";
+
+    }
+
+
+    slots[index]=null;
+
+
+    log(
+        `${adv?.name ?? "모험가"}을 방어선에서 철수시켰습니다.`
+    );
+
+
+    save();
+    render();
+
+    return;
+}
+
+
+if(!selectedId)
+    return;
+
+
+const adv=
+    getAdv(selectedId);
+
+
+if(
+    !adv ||
+    adv.status!=="waiting"
+)
+    return;
+
+
+adv.status=
+    "defense";
+
+
+slots[index]=
+    adv.id;
+
+
+log(
+    `${adv.name}을 방어선에 배치했습니다.`
+);
+
+
+selectedId=null;
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   SYNERGY
+===================================================== */
+
+function lineSynergy(slots){
+
+const jobs=
+    slots
+    .map(getAdv)
+    .filter(Boolean)
+    .map(
+        a=>a.job
+    );
+
+
+let attackBonus=0;
+
+let defenseBonus=0;
+
+let name="";
+
+
+if(
+    jobs.includes("warrior")
+    &&
+    jobs.includes("archer")
+){
+
+    defenseBonus+=.12;
+
+    name+="전사+궁수 보호 ";
+
+}
+
+
+if(
+    jobs.includes("warrior")
+    &&
+    jobs.includes("mage")
+){
+
+    attackBonus+=.12;
+
+    name+="전사+마법 증폭 ";
+
+}
+
+
+const archerCount=
+    jobs.filter(
+        j=>j==="archer"
+    ).length;
+
+
+if(archerCount>=2){
+
+    attackBonus+=.10;
+
+    name+="궁수 집중사격 ";
+
+}
+
+
+const mageCount=
+    jobs.filter(
+        j=>j==="mage"
+    ).length;
+
+
+if(mageCount>=2){
+
+    attackBonus+=.15;
+
+    name+="마법 공명 ";
+
+}
+
+
+const unique=
+    new Set(jobs);
+
+
+if(
+    jobs.length>=3
+    &&
+    unique.size===3
+){
+
+    attackBonus+=.10;
+    defenseBonus+=.10;
+
+    name+="균형 파티 ";
+
+}
+
+
+return {
+
+    attackBonus,
+    defenseBonus,
+
+    name:
+        name.trim()
+
+};
+
+}
+
+
+/* =====================================================
+   POWER
+===================================================== */
+
+function advCombatPower(adv){
+
+return (
+    adv.attack
+    +
+    adv.defense*.6
+    +
+    adv.hp*.08
+);
+
+}
+
+
+function linePower(slots){
+
+const adventurers=
+    slots
+    .map(getAdv)
+    .filter(Boolean);
+
+
+const synergy=
+    lineSynergy(slots);
+
+
+let power=
+    adventurers.reduce(
+        (
+            total,
+            adv
+        )=>
+            total
+            +
+            advCombatPower(adv),
+        0
+    );
+
+
+power*=
+    (
+        1
+        +
+        synergy.attackBonus
+        +
+        synergy.defenseBonus*.5
+    );
+
+
+return Math.round(power);
+
+}
+
+
+function totalDefensePower(){
+
+return (
+    linePower(state.line1)
+    +
+    linePower(state.line2)
+);
+
+}
+
+
+function enemyPower(){
+
+return Math.round(
+
+    CONFIG.enemyBase
+
+    +
+
+    (state.wave-1)
+    *
+    CONFIG.enemyGrowth
+
+    +
+
+    Math.pow(
+        state.wave,
+        1.25
+    )
+
+);
+
+}
+
+
+function battlePrediction(){
+
+const ratio=
+    totalDefensePower()
+    /
+    Math.max(
+        1,
+        enemyPower()
+    );
+
+
+if(ratio>=1.3){
+
+    return {
+        text:"안정적",
+        className:"safe"
+    };
+
+}
+
+
+if(ratio>=.85){
+
+    return {
+        text:"접전",
+        className:"normal"
+    };
+
+}
+
+
+return {
+    text:"위험",
+    className:"danger-text"
+};
+
+}
+
+
+/* =====================================================
+   QUEST BOARD
+===================================================== */
+
+function availableQuestPool(){
+
+return QUEST_POOL.filter(
+    q=>
+        q.rank
+        <=
+        townData().maxQuestRank
+);
+
+}
+
+
+function createQuest(){
+
+const pool=
+    availableQuestPool();
+
+
+const template=
+    pool[
+        randomInt(
+            0,
+            pool.length-1
+        )
+    ];
+
+
+const variance=
+    randomRange(.9,1.15);
+
+
+return {
+
+    id:uid(),
+
+    rank:template.rank,
+
+    name:template.name,
+
+    duration:
+        template.duration,
+
+    expiry:
+        template.expiry,
+
+    remainingExpiry:
+        template.expiry,
+
+    power:
+        Math.round(
+            template.power
+            *
+            variance
+        ),
+
+    reward:
+        Math.round(
+            template.reward
+            *
+            variance
+        )
+
+};
+
+}
+
+
+function refreshQuestBoard(){
+
+const max=
+    townData().questSlots;
+
+
+while(
+    state.questBoard.length
+    <
+    max
+){
+
+    state.questBoard.push(
+        createQuest()
+    );
+
+}
+
+
+while(
+    state.questBoard.length
+    >
+    max
+){
+
+    state.questBoard.pop();
+
+}
+
+}
+
+function addWaveQuests(){
+
+    const town = townData();
+
+    const freeSlots =
+        town.questBoardSlots
+        - state.questBoard.length;
+
+    const spawnCount =
+        Math.min(
+            town.questSpawnPerWave,
+            freeSlots
+        );
+
+    for(let i=0;i<spawnCount;i++){
+
+        state.questBoard.push(
+            createQuest()
+        );
+
+    }
+
+}
+
+/* =====================================================
+   QUEST SUCCESS
+===================================================== */
+
+function questChance(
+    adv,
+    quest
+){
+
+const power=
+    advCombatPower(adv);
+
+
+const ratio=
+    power/
+    quest.power;
+
+
+return Math.max(
+    .2,
+    Math.min(
+        .95,
+        .35
+        +
+        ratio*.45
+    )
+);
+
+}
+
+
+function riskText(
+    adv,
+    quest
+){
+
+const chance=
+    questChance(
+        adv,
+        quest
+    );
+
+
+if(chance>=.8)
+    return "안전";
+
+
+if(chance>=.55)
+    return "보통";
+
+
+return "위험";
+
+}
+
+
+/* =====================================================
+   QUEST START
+===================================================== */
+
+function sendQuest(
+    questId
+){
+
+if(!selectedId){
+
+    alert(
+        "모험가를 먼저 선택하세요."
+    );
+
+    return;
+}
+
+
+const adv=
+    getAdv(
+        selectedId
+    );
+
+
+if(adv.hp <= adv.maxHp*0.2){
+
+    alert(
+        "체력이 낮은 모험가는 퀘스트에 파견할 수 없습니다."
+    );
+
+    return;
+}
+
+
+
+if(
+    !adv
+    ||
+    adv.status!=="waiting"
+)
+    return;
+
+
+const quest=
+    state.questBoard.find(
+        q=>q.id===questId
+    );
+
+
+if(!quest)
+    return;
+
+
+adv.status=
+    "quest";
+
+
+state.activeQuests.push({
+
+    quest,
+
+    adventurerId:
+        adv.id,
+
+    remaining:
+        quest.duration
+
+});
+
+
+state.questBoard=
+    state.questBoard.filter(
+        q=>q.id!==questId
+    );
+
+
+log(
+    `${adv.name}이 '${quest.name}' 퀘스트를 시작했습니다.`
+);
+
+
+selectedId=null;
+
+
+// refreshQuestBoard();
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   QUEST PROGRESS
+===================================================== */
+
+function progressQuestExpiry(){
+
+for(
+    const quest of
+    state.questBoard
+){
+
+    quest.remainingExpiry--;
+
+}
+
+
+const expired=
+    state.questBoard.filter(
+        q=>
+            q.remainingExpiry<=0
+    );
+
+
+for(
+    const q of expired
+){
+
+    log(
+        `'${q.name}' 의뢰가 만료되었습니다.`
+    );
+
+}
+
+
+state.questBoard=
+    state.questBoard.filter(
+        q=>
+            q.remainingExpiry>0
+    );
+
+
+// refreshQuestBoard();
+
+}
+
+
+function progressActiveQuests(){
+
+for(
+    const active
+    of
+    [...state.activeQuests]
+){
+
+    active.remaining--;
+
+
+    if(
+        active.remaining>0
+    )
+        continue;
+
+
+    const adv=
+        getAdv(
+            active.adventurerId
+        );
+
+
+    if(!adv)
+        continue;
+
+
+    const quest=
+        active.quest;
+
+
+    const chance=
+        questChance(
+            adv,
+            quest
+        );
+
+
+    if(
+        Math.random()
+        <
+        chance
+    ){
+
+        state.gold+=
+            quest.reward;
+
+
+        gainExp(
+            adv,
+            25
+            +
+            quest.rank*25
+        );
+
+
+        adv.career.quests++;
+
+
+        log(
+            `${adv.name}이 '${quest.name}'에 성공했습니다. +${quest.reward}G`
+        );
+
+    }
+
+    else {
+
+        const damage=
+            Math.round(
+                adv.maxHp
+                *
+                randomRange(
+                    .25,
+                    .65
+                )
+            );
+
+
+        adv.hp-=damage;
+
+
+        adv.career.failedQuests++;
+
+
+        log(
+            `${adv.name}이 '${quest.name}'에 실패하여 ${damage} 피해를 입었습니다.`
+        );
+
+
+        if(
+            adv.hp<=0
+        ){
+
+            // // killAdventurer(
+            // //     adv
+            // // );
+            // handleKnockout(adv);
+            adv.hp = 1;
+
+            log(`${adv.name}이 빈사 상태로 귀환했습니다.`);
+        }
+
+    }
+
+
+    if(
+        adv.status!=="dead"
+    ){
+
+        adv.status=
+            "waiting";
+
+    }
+
+
+    state.activeQuests=
+        state.activeQuests.filter(
+            x=>x!==active
+        );
+
+}
+
+}
+
+
+/* =====================================================
+   BATTLE
+===================================================== */
+
+function calculateDamage(
+    enemy,
+    defenders
+){
+
+if(
+    defenders.length===0
+)
+    return enemy;
+
+
+const synergy=
+    lineSynergy(
+        defenders.map(
+            a=>a.id
+        )
+    );
+
+
+const defense=
+    defenders.reduce(
+        (
+            total,
+            adv
+        )=>
+            total
+            +
+            adv.defense,
+        0
+    );
+
+
+return Math.max(
+    1,
+    enemy
+    -
+    defense
+    *
+    (
+        1+
+        synergy.defenseBonus
+    )
+);
+
+}
+
+
+function resolveLine(
+    slotIds,
+    incoming,
+    label
+){
+
+const defenders=
+    slotIds
+    .map(getAdv)
+    .filter(Boolean);
+
+
+if(
+    defenders.length===0
+)
+    return incoming;
+
+
+const synergy=
+    lineSynergy(
+        slotIds
+    );
+
+
+let damagePower=
+    linePower(
+        slotIds
+    );
+
+
+const stopped=
+    Math.min(
+        incoming,
+        damagePower
+    );
+
+
+let remaining=
+    Math.max(
+        0,
+        incoming-damagePower
+    );
+
+
+const retaliation=
+    calculateDamage(
+        incoming,
+        defenders
+    );
+
+
+for(
+    const adv
+    of
+    defenders
+){
+
+    let damage=
+        retaliation
+        /
+        defenders.length;
+
+
+    damage=
+        Math.max(
+            3,
+            damage
+            -
+            adv.defense*.3
+        );
+
+
+    damage=
+        Math.round(
+            damage
+            *
+            randomRange(
+                .8,
+                1.2
+            )
+        );
+
+
+    adv.hp-=damage;
+
+
+    if(
+        adv.hp<=0
+    ){
+
+        handleKnockout(adv);
+
+    }
+
+    else {
+
+        adv.career.waves++;
+
+
+        gainExp(
+            adv,
+            18
+            +
+            Math.floor(
+                state.wave*.7
+            )
+        );
+
+    }
+
+}
+
+
+log(
+    `${label}에서 ${Math.round(stopped)} 전투력을 저지했습니다.`
+);
+
+
+return remaining;
+
+}
+
+
+function resolveDefense(){
+
+let remaining=
+    enemyPower();
+
+
+remaining=
+    resolveLine(
+        state.line2,
+        remaining,
+        "외곽 방어선"
+    );
+
+
+if(
+    remaining>0
+){
+
+    remaining=
+        resolveLine(
+            state.line1,
+            remaining,
+            "최종 방어선"
+        );
+
+}
+
+
+if(
+    remaining>0
+){
+
+    const damage=
+        Math.max(
+            3,
+            Math.round(
+                remaining*.55
+            )
+        );
+
+
+    state.townHp-=damage;
+
+
+    log(
+        `마왕군이 도시를 공격했습니다. 도시 HP -${damage}`
+    );
+
+}
+
+
+if(
+    state.townHp<=0
+){
+
+    state.townHp=0;
+
+    state.gameOver=true;
+
+
+    log(
+        "도시가 함락되었습니다."
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   DEATH
+===================================================== */
+
+function removeFromDefense(id){
+
+state.line1=
+    state.line1.map(
+        x=>x===id
+        ?
+        null
+        :
+        x
+    );
+
+
+state.line2=
+    state.line2.map(
+        x=>x===id
+        ?
+        null
+        :
+        x
+    );
+
+}
+
+
+function handleKnockout(adv){
+
+    const RETREAT_CHANCE = 0.7;
+
+    const hasWaitingSpace =
+        waitingAdventurers().length
+        < waitingCapacity();
+
+    const retreatSuccess =
+        Math.random()
+        < RETREAT_CHANCE;
+
+    if(
+        retreatSuccess
+        &&
+        hasWaitingSpace
+    ){
+        removeFromDefense(adv.id);
+
+        adv.hp = 1;
+        adv.status = "waiting";
+
+        log(
+            `${adv.name}이 전투불능 상태에서 후퇴했습니다.`
+        );
+
+        return;
+    }
+
+    killAdventurer(adv);
+}
+
+
+function killAdventurer(adv){
+
+removeFromDefense(
+    adv.id
+);
+
+
+state.activeQuests=
+    state.activeQuests.filter(
+        a=>
+            a.adventurerId
+            !==
+            adv.id
+    );
+
+
+adv.hp=0;
+
+adv.status="dead";
+
+
+if(
+    state.graveyard.length
+    <
+    graveCapacity()
+){
+
+    state.graveyard.push(
+        adv.id
+    );
+
+
+    log(
+        `${adv.name}이 전사했습니다.`
+    );
+
+}
+
+else {
+
+    state.adventurers=
+        state.adventurers.filter(
+            a=>a.id!==adv.id
+        );
+
+
+    log(
+        `${adv.name}이 전사했지만 묘지 공간이 부족해 기록에서 사라졌습니다.`
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   REVIVE
+===================================================== */
+
+function reviveGold(id){
+
+const adv=
+    getAdv(id);
+
+
+if(!adv)
+    return;
+
+
+if(
+    state.gold
+    <
+    CONFIG.reviveGold
+){
+
+    alert(
+        "골드가 부족합니다."
+    );
+
+    return;
+}
+
+
+state.gold-=
+    CONFIG.reviveGold;
+
+
+adv.status=
+    "reviving";
+
+
+adv.reviveRemaining=
+    CONFIG.reviveWaves;
+
+
+state.graveyard=
+    state.graveyard.filter(
+        x=>x!==id
+    );
+
+
+log(
+    `${adv.name}의 부활 의식을 시작했습니다.`
+);
+
+
+save();
+render();
+
+}
+
+
+function reviveGem(id){
+
+const adv=
+    getAdv(id);
+
+
+if(!adv)
+    return;
+
+
+if(
+    state.meta.gem
+    <
+    CONFIG.reviveGem
+){
+
+    alert(
+        "Gem이 부족합니다."
+    );
+
+    return;
+}
+
+
+if(
+    waitingAdventurers().length
+    >=
+    waitingCapacity()
+){
+
+    alert(
+        "대기소가 가득 찼습니다."
+    );
+
+    return;
+}
+
+
+state.meta.gem-=
+    CONFIG.reviveGem;
+
+
+adv.hp=
+    adv.maxHp;
+
+
+adv.status=
+    "waiting";
+
+
+state.graveyard=
+    state.graveyard.filter(
+        x=>x!==id
+    );
+
+
+log(
+    `${adv.name}이 즉시 부활했습니다.`
+);
+
+
+save();
+render();
+
+}
+
+
+function progressRevives(){
+
+for(
+    const adv
+    of
+    state.adventurers
+){
+
+    if(
+        adv.status!=="reviving"
+    )
+        continue;
+
+
+    adv.reviveRemaining--;
+
+
+    if(
+        adv.reviveRemaining<=0
+    ){
+
+        if(
+            waitingAdventurers().length
+            <
+            waitingCapacity()
+        ){
+
+            adv.hp=
+                adv.maxHp;
+
+
+            adv.status=
+                "waiting";
+
+
+            log(
+                `${adv.name}이 부활했습니다.`
+            );
+
+        }
+
+        else {
+
+            adv.reviveRemaining=1;
+
+        }
+
+    }
+
+}
+
+}
+
+
+/* =====================================================
+   TOWN
+===================================================== */
+
+function townUpgradeCost(){
+
+const next=
+    state.townLevel+1;
+
+
+return (
+    CONFIG.townUpgradeCosts[
+        next
+    ]
+    ??
+    null
+);
+
+}
+
+
+function upgradeTown(){
+
+if(
+    state.townLevel>=5
+)
+    return;
+
+
+const cost=
+    townUpgradeCost();
+
+
+if(
+    state.gold<cost
+){
+
+    alert(
+        "골드가 부족합니다."
+    );
+
+    return;
+}
+
+
+state.gold-=cost;
+
+
+state.townLevel++;
+
+
+refreshQuestBoard();
+
+
+log(
+    `도시가 Lv.${state.townLevel}로 성장했습니다.`
+);
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   EXPANSIONS
+===================================================== */
+
+function expandWaitingGold(){
+
+if(
+    state.gold
+    <
+    CONFIG.waitingExpandGold
+)
+    return;
+
+
+state.gold-=
+    CONFIG.waitingExpandGold;
+
+
+state.tempWaiting++;
+
+
+log(
+    "현재 런의 모험가 대기소가 확장되었습니다."
+);
+
+
+save();
+render();
+
+}
+
+
+function expandWaitingGem(){
+
+if(
+    state.meta.gem<5
+)
+    return;
+
+
+state.meta.gem-=5;
+
+
+state.meta.permanentWaiting++;
+
+
+save();
+render();
+
+}
+
+
+function expandGraveGold(){
+
+if(
+    state.gold
+    <
+    CONFIG.graveExpandGold
+)
+    return;
+
+
+state.gold-=
+    CONFIG.graveExpandGold;
+
+
+state.tempGrave++;
+
+
+save();
+render();
+
+}
+
+
+function expandGraveGem(){
+
+if(
+    state.meta.gem<5
+)
+    return;
+
+
+state.meta.gem-=5;
+
+
+state.meta.permanentGrave++;
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   WAVE
+===================================================== */
+
+function nextWave(){
+
+if(
+    state.gameOver
+)
+    return;
+
+
+progressActiveQuests();
+
+progressQuestExpiry();
+
+resolveDefense();
+
+progressRevives();
+
+
+if(
+    !state.gameOver
+){
+
+    state.wave++;
+
+
+    refreshQuestBoard();
+}
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   SELECT
+===================================================== */
+
+function selectAdventurer(id){
+
+const adv=
+    getAdv(id);
+
+
+if(
+    !adv
+    ||
+    adv.status!=="waiting"
+)
+    return;
+
+
+selectedId=
+    selectedId===id
+    ?
+    null
+    :
+    id;
+
+
+render();
+
+}
+
+
+function dismissSelected(){
+
+if(!selectedId)
+    return;
+
+
+const adv=
+    getAdv(selectedId);
+
+
+if(
+    !adv
+    ||
+    adv.status!=="waiting"
+)
+    return;
+
+
+if(
+    !confirm(
+        `${adv.name}을 길드에서 내보낼까요?`
+    )
+)
+    return;
+
+
+state.adventurers=
+    state.adventurers.filter(
+        a=>a.id!==selectedId
+    );
+
+
+log(
+    `${adv.name}이 길드를 떠났습니다.`
+);
+
+
+selectedId=null;
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   INHERITANCE
+===================================================== */
+
+function survivorsForInheritance(){
+
+const graveIds=
+    new Set(
+        state.graveyard
+    );
+
+
+return state.adventurers.filter(
+
+    adv=>
+
+        !graveIds.has(
+            adv.id
+        )
+
+        &&
+
+        adv.status!=="dead"
+
+);
+
+}
+
+
+function toggleInheritance(id){
+
+const list=
+    state.inheritanceSelection;
+
+
+const index=
+    list.indexOf(id);
+
+
+if(index>=0){
+
+    list.splice(
+        index,
+        1
+    );
+
+}
+
+else {
+
+    if(
+        list.length
+        >=
+        inheritanceCapacity()
+    ){
+
+        alert(
+            "승계 슬롯이 부족합니다."
+        );
+
+        return;
+
+    }
+
+
+    list.push(id);
+
+}
+
+
+render();
+
+}
+
+
+function expandInheritance(){
+
+if(
+    state.meta.gem<10
+)
+    return;
+
+
+state.meta.gem-=10;
+
+
+state.meta.permanentInheritance++;
+
+
+save();
+render();
+
+}
+
+
+function startNewRun(){
+
+if(
+    !state.gameOver
+)
+    return;
+
+
+const inherited=
+    state.inheritanceSelection
+    .map(getAdv)
+    .filter(Boolean)
+    .map(
+        adv=>{
+
+            const copy=
+                JSON.parse(
+                    JSON.stringify(
+                        adv
+                    )
+                );
+
+
+            copy.level=
+                Math.max(
+                    1,
+                    Math.ceil(
+                        copy.level*.6
+                    )
+                );
+
+
+            copy.status=
+                "waiting";
+
+
+            copy.exp=0;
+
+
+            copy.career.inherited++;
+
+
+            return copy;
+
+        }
+    );
+
+
+const meta=
+    state.meta;
+
+
+state=
+    createRun(
+        meta
+    );
+
+
+for(
+    const adv
+    of
+    inherited
+){
+
+    /*
+    현재 레벨에 맞게 다시 계산
+    */
+
+    const base=
+        JOBS[
+            adv.job
+        ];
+
+
+    adv.maxHp=
+        Math.round(
+            (
+                base.hp
+                +
+                (adv.level-1)*9
+            )
+            *
+            adv.talents.hp
+        );
+
+
+    adv.hp=
+        adv.maxHp;
+
+
+    adv.attack=
+        Math.round(
+            (
+                base.attack
+                +
+                (adv.level-1)*4
+            )
+            *
+            adv.talents.attack
+        );
+
+
+    adv.defense=
+        Math.round(
+            (
+                base.defense
+                +
+                (adv.level-1)*2
+            )
+            *
+            adv.talents.defense
+        );
+
+
+    state.adventurers.push(
+        adv
+    );
+
+}
+
+
+while(
+    state.adventurers.length<3
+){
+
+    state.adventurers.push(
+        createAdventurer()
+    );
+
+}
+
+
+refreshQuestBoard();
+
+
+log(
+    `${inherited.length}명의 모험가가 새로운 길드로 승계되었습니다.`
+);
+
+
+selectedId=null;
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   TABS
+===================================================== */
+
+function openTab(tab){
+
+activeTab=tab;
+
+
+[
+    "adventurer",
+    "quest",
+    "grave"
+]
+.forEach(
+
+name=>{
+
+    document
+    .getElementById(
+        "tab"
+        +
+        name.charAt(0).toUpperCase()
+        +
+        name.slice(1)
+    )
+    ?.classList
+    .toggle(
+        "active",
+        name===tab
+    );
+
+
+    document
+    .getElementById(
+        "content"
+        +
+        name.charAt(0).toUpperCase()
+        +
+        name.slice(1)
+    )
+    ?.classList
+    .toggle(
+        "active",
+        name===tab
+    );
+
+}
+
+);
+
+}
+
+
+function openPeopleTab(tab){
+
+activePeopleTab=tab;
+
+
+const tabs=[
+    "adventurer",
+    "grave"
+];
+
+
+for(
+    const name of tabs
+){
+
+    const tabEl=
+        document.getElementById(
+            "tab"
+            +
+            name.charAt(0).toUpperCase()
+            +
+            name.slice(1)
+        );
+
+
+    const contentEl=
+        document.getElementById(
+            "content"
+            +
+            name.charAt(0).toUpperCase()
+            +
+            name.slice(1)
+        );
+
+
+    tabEl
+    ?.classList
+    .toggle(
+        "active",
+        name===tab
+    );
+
+
+    contentEl
+    ?.classList
+    .toggle(
+        "active",
+        name===tab
+    );
+
+}
+
+}
+
+
+function openWorldTab(tab){
+
+activeWorldTab=tab;
+
+
+const tabs=[
+    "town",
+    "quest"
+];
+
+
+for(
+    const name of tabs
+){
+
+    const tabEl=
+        document.getElementById(
+            "tab"
+            +
+            name.charAt(0).toUpperCase()
+            +
+            name.slice(1)
+        );
+
+
+    const contentEl=
+        document.getElementById(
+            "content"
+            +
+            name.charAt(0).toUpperCase()
+            +
+            name.slice(1)
+        );
+
+
+    tabEl
+    ?.classList
+    .toggle(
+        "active",
+        name===tab
+    );
+
+
+    contentEl
+    ?.classList
+    .toggle(
+        "active",
+        name===tab
+    );
+
+}
+
+}
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+function render(){
+
+document.getElementById(
+    "wave"
+).textContent=
+    state.wave;
+
+
+document.getElementById(
+    "gold"
+).textContent=
+    state.gold;
+
+
+document.getElementById(
+    "gem"
+).textContent=
+    state.meta.gem;
+
+
+document.getElementById(
+    "townHp"
+).textContent=
+    `${state.townHp}/${CONFIG.townHp}`;
+
+
+document.getElementById(
+    "townLevel"
+).textContent=
+    `Lv.${state.townLevel}`;
+
+
+document.getElementById(
+    "ourPower"
+).textContent=
+    totalDefensePower();
+
+
+document.getElementById(
+    "enemyPower"
+).textContent=
+    enemyPower();
+
+
+const predict=
+    battlePrediction();
+
+
+const predictionEl=
+    document.getElementById(
+        "battlePrediction"
+    );
+
+
+predictionEl.textContent=
+    predict.text;
+
+
+predictionEl.className=
+    predict.className;
+
+
+renderTown();
+
+renderDefense(
+    "line1"
+);
+
+renderDefense(
+    "line2"
+);
+
+renderWaiting();
+
+renderQuests();
+
+renderGraveyard();
+
+renderLogs();
+
+renderGameOver();
+
+// openTab(
+//     activeTab
+// );
+openPeopleTab(
+    activePeopleTab
+);
+
+
+openWorldTab(
+    activeWorldTab
+);
+
+}
+
+
+/* =====================================================
+   TOWN UI
+===================================================== */
+
+function renderTown(){
+
+const town=
+    townData();
+
+
+document.getElementById(
+    "defenseSlotInfo"
+).textContent=
+    `${town.line1+town.line2}칸`;
+
+
+document.getElementById(
+    "questSlotInfo"
+).textContent=
+    `${town.questSlots}개`;
+
+
+document.getElementById(
+    "townLevelCard"
+).textContent=
+    `Lv.${state.townLevel}`;
+
+
+document.getElementById(
+    "questRankInfo"
+).textContent=
+    `Rank ${town.maxQuestRank}`;
+
+const btn=
+    document.getElementById(
+        "townUpgradeButton"
+    );
+
+
+const info=
+    document.getElementById(
+        "townNextInfo"
+    );
+
+
+if(
+    state.townLevel>=5
+){
+
+    btn.textContent=
+        "도시 최고 레벨";
+
+
+    btn.disabled=true;
+
+
+    info.textContent=
+        "현재 프로토타입의 최대 도시 단계입니다.";
+
+}
+
+else {
+
+    const next=
+        TOWN_LEVELS[
+            state.townLevel+1
+        ];
+
+
+    const cost=
+        townUpgradeCost();
+
+
+    btn.disabled=false;
+
+
+    btn.textContent=
+        `도시 Lv.${state.townLevel+1} 업그레이드 💰${cost}`;
+
+
+    info.textContent=
+        `다음 단계: 방어 ${next.line1+next.line2}칸 · 퀘스트 ${next.questSlots}개 · 퀘스트 Rank ${next.maxQuestRank}`;
+
+}
+
+}
+
+
+/* =====================================================
+   DEFENSE UI
+===================================================== */
+
+function renderDefense(
+    line
+){
+
+const root=
+    document.getElementById(
+        line
+    );
+
+
+root.innerHTML="";
+
+
+const slots=
+    state[line];
+
+
+const active=
+    activeSlots(
+        line
+    );
+
+
+for(
+    let i=0;
+    i<3;
+    i++
+){
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+
+    div.className=
+        "slot";
+
+
+    if(i>=active){
+
+        div.classList.add(
+            "locked"
+        );
+
+
+        div.textContent=
+            "🔒";
+
+    }
+
+    else if(
+        slots[i]
+    ){
+
+        const adv=
+            getAdv(
+                slots[i]
+            );
+
+
+        if(adv){
+
+            div.classList.add(
+                "occupied"
+            );
+
+
+            div.innerHTML=
+                `
+                <div>
+                <strong>${adv.name}</strong>
+                <br>
+                ${JOBS[adv.job].name}
+                Lv.${adv.level}
+                <br>
+                HP ${Math.max(0,adv.hp)}
+                </div>
+                `;
+
+        }
+
+    }
+
+    else {
+
+        if(selectedId){
+
+            div.classList.add(
+                "possible"
+            );
+
+
+            div.textContent=
+                "배치";
+
+        }
+
+        else {
+
+            div.textContent=
+                "빈 슬롯";
+
+        }
+
+    }
+
+
+    if(i<active){
+
+        div.onclick=
+            ()=>
+                assignSlot(
+                    line,
+                    i
+                );
+
+    }
+
+
+    root.appendChild(
+        div
+    );
+
+}
+
+
+const synergy=
+    lineSynergy(
+        slots
+    );
+
+
+const synergyEl=
+    document.getElementById(
+        line+"Synergy"
+    );
+
+
+if(
+    synergy.name
+){
+
+    synergyEl.classList.remove(
+        "hidden"
+    );
+
+
+    synergyEl.textContent=
+        `✨ ${synergy.name}`;
+
+}
+
+else {
+
+    synergyEl.classList.add(
+        "hidden"
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   ADVENTURER UI
+===================================================== */
+
+function renderWaiting(){
+
+const root=
+    document.getElementById(
+        "waiting"
+    );
+
+
+root.innerHTML="";
+
+
+const waiting=
+    waitingAdventurers();
+
+
+document.getElementById(
+    "waitingCount"
+).textContent=
+    `대기 ${waiting.length}/${waitingCapacity()} · 방어/원정 중인 모험가는 별도 공간을 차지하지 않습니다.`;
+
+
+document.getElementById(
+    "hireCost"
+).textContent=
+    hireCost();
+
+
+for(
+    const adv
+    of
+    waiting
+){
+
+    const job=
+        JOBS[
+            adv.job
+        ];
+
+
+    const card=
+        document.createElement(
+            "div"
+        );
+
+
+    card.className=
+        "card";
+
+
+    if(
+        selectedId===
+        adv.id
+    ){
+
+        card.classList.add(
+            "selected"
+        );
+
+    }
+
+
+    const hpPercent=
+        Math.max(
+            0,
+            adv.hp/
+            adv.maxHp*
+            100
+        );
+
+
+    const expNeed=
+        requiredExp(
+            adv.level
+        );
+
+
+    card.innerHTML=
+        `
+        <div>
+            <span class="name">
+                ${adv.name}
+            </span>
+
+            <span class="job ${job.colorClass}">
+                ${job.name}
+            </span>
+        </div>
+
+        <div class="small">
+            Lv.${adv.level}
+            · EXP ${adv.exp}/${expNeed}
+        </div>
+
+        <div class="hp">
+            <div style="width:${hpPercent}%"></div>
+        </div>
+
+        <div class="small">
+            HP ${adv.hp}/${adv.maxHp}
+        </div>
+
+        <div class="stats">
+            <div>
+            ⚔️ ${adv.attack}
+            </div>
+
+            <div>
+            🛡️ ${adv.defense}
+            </div>
+
+            <div>
+            💪 ${Math.round(advCombatPower(adv))}
+            </div>
+        </div>
+
+        <div class="small">
+            방어 ${adv.career.waves}
+            · 퀘스트 ${adv.career.quests}
+            · 승계 ${adv.career.inherited}
+        </div>
+        `;
+
+
+    card.onclick=
+        ()=>
+            selectAdventurer(
+                adv.id
+            );
+
+
+    root.appendChild(
+        card
+    );
+
+}
+
+
+const actions=
+    document.getElementById(
+        "selectedActions"
+    );
+
+
+actions.innerHTML="";
+
+
+if(selectedId){
+
+    const adv=
+        getAdv(
+            selectedId
+        );
+
+
+    if(adv){
+
+        const selectedInfo=
+            document.createElement(
+                "div"
+            );
+
+
+        selectedInfo.className=
+            "small";
+
+
+        selectedInfo.style.flex=
+            "100%";
+
+
+        selectedInfo.textContent=
+            `선택: ${adv.name} / 전투력 ${Math.round(advCombatPower(adv))}`;
+
+
+        actions.appendChild(
+            selectedInfo
+        );
+
+    }
+
+
+    const btn=
+        document.createElement(
+            "button"
+        );
+
+
+    btn.textContent=
+        "길드에서 내보내기";
+
+
+    btn.onclick=
+        dismissSelected;
+
+
+    actions.appendChild(
+        btn
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   QUEST UI
+===================================================== */
+
+function renderQuests(){
+
+const root=
+    document.getElementById(
+        "quests"
+    );
+
+
+root.innerHTML="";
+
+
+document.getElementById(
+    "questBoardInfo"
+).textContent=
+    `현재 퀘스트 슬롯 ${state.questBoard.length}/${townData().questSlots} · 도시 Lv.${state.townLevel}에서는 Rank ${townData().maxQuestRank}까지 등장`;
+
+
+/* ACTIVE */
+
+for(
+    const active
+    of
+    state.activeQuests
+){
+
+    const adv=
+        getAdv(
+            active.adventurerId
+        );
+
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+
+    div.className=
+        "quest";
+
+
+    div.innerHTML=
+        `
+        <div class="quest-rank">
+        진행 중
+        </div>
+
+        <strong>
+        ${active.quest.name}
+        </strong>
+
+        <div class="small">
+        ${adv?.name ?? ""}
+        · 남은 ${active.remaining} Wave
+        </div>
+        `;
+
+
+    root.appendChild(
+        div
+    );
+
+}
+
+
+/* BOARD */
+
+for(
+    const q
+    of
+    state.questBoard
+){
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+
+    div.className=
+        "quest";
+
+
+    let selectedInfo=
+        "모험가를 선택하세요";
+
+
+    if(selectedId){
+
+        const adv=
+            getAdv(
+                selectedId
+            );
+
+
+        if(adv){
+
+            selectedInfo=
+                `${adv.name}: ${riskText(adv,q)} (${Math.round(questChance(adv,q)*100)}%)`;
+
+        }
+
+    }
+
+
+    div.innerHTML=
+        `
+        <div class="quest-rank">
+        Rank ${q.rank}
+        </div>
+
+        <strong>
+        ${q.name}
+        </strong>
+
+        <div class="small">
+        유효기간 ${q.remainingExpiry} Wave
+        </div>
+
+        <div class="small">
+        수행 ${q.duration} Wave
+        · 권장 ${q.power}
+        </div>
+
+        <div class="small">
+        보상 💰${q.reward}
+        </div>
+
+        <div class="small">
+        ${selectedInfo}
+        </div>
+
+        <button>
+        퀘스트 파견
+        </button>
+        `;
+
+
+    div
+    .querySelector(
+        "button"
+    )
+    .onclick=
+        ()=>
+            sendQuest(
+                q.id
+            );
+
+
+    root.appendChild(
+        div
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   GRAVE UI
+===================================================== */
+
+function renderGraveyard(){
+
+document.getElementById(
+    "graveCount"
+).textContent=
+    `묘지 ${state.graveyard.length}/${graveCapacity()}`;
+
+
+const root=
+    document.getElementById(
+        "graveyard"
+    );
+
+
+root.innerHTML="";
+
+
+for(
+    const id
+    of
+    state.graveyard
+){
+
+    const adv=
+        getAdv(id);
+
+
+    if(!adv)
+        continue;
+
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+
+    div.className=
+        "grave";
+
+
+    div.innerHTML=
+        `
+        <strong>
+        ⚰️ ${adv.name}
+        </strong>
+
+        <div class="small">
+        ${JOBS[adv.job].name}
+        Lv.${adv.level}
+        </div>
+
+        <div class="small">
+        방어전 ${adv.career.waves}
+        · 퀘스트 ${adv.career.quests}
+        · 승계 ${adv.career.inherited}
+        </div>
+
+        <div class="toolbar">
+
+        <button>
+        💰${CONFIG.reviveGold}
+        / ${CONFIG.reviveWaves}W
+        </button>
+
+        <button>
+        💎${CONFIG.reviveGem}
+        즉시 부활
+        </button>
+
+        </div>
+        `;
+
+
+    const buttons=
+        div.querySelectorAll(
+            "button"
+        );
+
+
+    buttons[0].onclick=
+        ()=>
+            reviveGold(
+                adv.id
+            );
+
+
+    buttons[1].onclick=
+        ()=>
+            reviveGem(
+                adv.id
+            );
+
+
+    root.appendChild(
+        div
+    );
+
+}
+
+
+/* REVIVING */
+
+for(
+    const adv
+    of
+    state.adventurers
+){
+
+    if(
+        adv.status!=="reviving"
+    )
+        continue;
+
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+
+    div.className=
+        "grave";
+
+
+    div.innerHTML=
+        `
+        ✨ ${adv.name} 부활 중
+
+        <div class="small">
+        남은 ${adv.reviveRemaining} Wave
+        </div>
+        `;
+
+
+    root.appendChild(
+        div
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   LOG UI
+===================================================== */
+
+function renderLogs(){
+
+document.getElementById(
+    "log"
+).innerHTML=
+    state.logs
+    .slice()
+    .reverse()
+    .join("<br>");
+
+
+document.getElementById(
+    "waveButton"
+).disabled=
+    state.gameOver;
+
+}
+
+
+/* =====================================================
+   GAME OVER UI
+===================================================== */
+
+function renderGameOver(){
+
+const panel=
+    document.getElementById(
+        "gameOverPanel"
+    );
+
+
+if(
+    !state.gameOver
+){
+
+    panel.classList.add(
+        "hidden"
+    );
+
+    return;
+
+}
+
+
+panel.classList.remove(
+    "hidden"
+);
+
+
+const root=
+    document.getElementById(
+        "inheritList"
+    );
+
+
+root.innerHTML=
+    `
+    <div class="small">
+    승계 ${state.inheritanceSelection.length}/${inheritanceCapacity()}
+    </div>
+    `;
+
+
+const survivors=
+    survivorsForInheritance();
+
+
+for(
+    const adv
+    of
+    survivors
+){
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+
+    div.className=
+        "inherit-card";
+
+
+    if(
+        state.inheritanceSelection.includes(
+            adv.id
+        )
+    ){
+
+        div.classList.add(
+            "selected"
+        );
+
+    }
+
+
+    div.innerHTML=
+        `
+        <strong>
+        ${adv.name}
+        </strong>
+
+        · ${JOBS[adv.job].name}
+        Lv.${adv.level}
+
+        <div class="small">
+        전투력 ${Math.round(advCombatPower(adv))}
+        · 방어 ${adv.career.waves}
+        · 퀘스트 ${adv.career.quests}
+        · 기존 승계 ${adv.career.inherited}
+        </div>
+        `;
+
+
+    div.onclick=
+        ()=>
+            toggleInheritance(
+                adv.id
+            );
+
+
+    root.appendChild(
+        div
+    );
+
+}
+
+}
+
+
+/* =====================================================
+   SAVE
+===================================================== */
+
+function save(){
+
+localStorage.setItem(
+    "lastGuildPrototypeV2",
+    JSON.stringify(state)
+);
+
+}
+
+
+function load(){
+
+const saved=
+    localStorage.getItem(
+        "lastGuildPrototypeV2"
+    );
+
+
+if(saved){
+
+    try {
+
+        state=
+            JSON.parse(
+                saved
+            );
+
+
+        refreshQuestBoard();
+
+        return;
+
+    }
+    catch(e){}
+
+}
+
+
+state=
+    createRun(
+        createMeta()
+    );
+
+
+for(
+    let i=0;
+    i<3;
+    i++
+){
+
+    state.adventurers.push(
+        createAdventurer()
+    );
+
+}
+
+
+refreshQuestBoard();
+
+
+save();
+
+}
+
+
+function resetSave(){
+
+if(
+    !confirm(
+        "모든 진행 데이터를 초기화할까요?"
+    )
+)
+    return;
+
+
+localStorage.removeItem(
+    "lastGuildPrototypeV2"
+);
+
+
+state=
+    createRun(
+        createMeta()
+    );
+
+
+selectedId=null;
+
+
+for(
+    let i=0;
+    i<3;
+    i++
+){
+
+    state.adventurers.push(
+        createAdventurer()
+    );
+
+}
+
+
+refreshQuestBoard();
+
+
+save();
+render();
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+load();
+render();
+
+</script>
+
+</body>
+</html>
