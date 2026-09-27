@@ -319,8 +319,8 @@ function totalDefensePower() {
 function enemyPower() {
   return Math.round(
     CONFIG.enemyBase +
-      (state.wave - 1) * CONFIG.enemyGrowth +
-      Math.pow(state.wave, 1.25),
+    (state.wave - 1) * CONFIG.enemyGrowth +
+    Math.pow(state.wave, 1.25),
   );
 }
 
@@ -654,11 +654,13 @@ function removeFromDefense(id) {
 }
 
 function handleKnockout(adv) {
-  const RETREAT_CHANCE = 0.7;
+  /*
+  우선 방어선에서 제거
+  */
+  removeFromDefense(adv.id);
 
   const hasWaitingSpace = waitingAdventurers().length < waitingCapacity();
-
-  const retreatSuccess = Math.random() < RETREAT_CHANCE;
+  const retreatSuccess = Math.random() < CONFIG.retreatChance;
 
   if (retreatSuccess && hasWaitingSpace) {
     removeFromDefense(adv.id);
@@ -666,9 +668,15 @@ function handleKnockout(adv) {
     adv.hp = 1;
     adv.status = "waiting";
 
-    log(`${adv.name}이 전투불능 상태에서 후퇴했습니다.`);
+    log(`${adv.name}이 전투불능 상태로 후퇴했습니다.`);
 
     return;
+  }
+
+  if (retreatSuccess && !hasWaitingSpace) {
+    log(`대기소에 자리가 없어 ${adv.name}가 사망했습니다.`);
+  } else {
+    log(`${adv.name}이 후퇴에 실패하여 사망했습니다.`);
   }
 
   killAdventurer(adv);
@@ -805,6 +813,53 @@ function progressRevives() {
   }
 }
 
+function recoverAdventurers() {
+  const result = [];
+
+  for (const adv of state.adventurers) {
+    // 모험가의 hp, maxhp에 따라서 회복 루프를 넘어갈지 말지 체크
+    if (!Number.isFinite(adv.hp)) continue;
+
+    if (!Number.isFinite(adv.maxHp)) continue;
+
+    if (adv.hp <= 0) continue;
+
+    if (adv.hp >= adv.maxHp) continue;
+
+    // end
+    // 여기서부터 모험가의 상태에 따라서 회복량이 달라진다.
+
+    let healRate = 0.0;
+    let recoverType = null;
+
+    if (isDefending(adv.id)) {
+      healRate = CONFIG.frontlineHealRate;
+      recoverType = "frontline";
+    } else if (adv.status === "waiting") {
+      healRate = CONFIG.waitingHealRate;
+      recoverType = "waiting";
+    }
+    else continue;
+
+    const beforeHp = adv.hp;
+
+    const healAmount = Math.ceil(adv.maxHp * healRate);
+
+    adv.hp = Math.min(adv.maxHp, adv.hp + healAmount);
+
+    result.push({
+      adventureId: adv.id,
+      name: adv.name,
+      type: recoverType,
+      beforeHp,
+      afterHp: adv.hp,
+      healed: adv.hp - beforeHp,
+    });
+  }
+
+  return result;
+}
+
 function recoverWaitingAdventurers() {
   for (const adv of state.adventurers) {
     if (adv.status !== "waiting") continue;
@@ -821,6 +876,20 @@ function recoverWaitingAdventurers() {
       log(`${adv.name}이 대기하며 HP를 ${adv.hp - before} 회복했습니다.`);
     }
   }
+}
+
+function recoverDefenseAdventurers() {
+  for (const adv of state.adventurers) {
+    if (adv.status !== "defense") continue;
+  }
+}
+
+function isDefending(advIds) {
+  const line1 = state.line1 ?? [];
+  const line2 = state.line2 ?? [];
+  const line3 = state.line3 ?? []; // 아직 line3은 존재하지 않음.
+
+  return (line1.includes(advIds) || line2.includes(advIds));
 }
 
 /* =====================================================
@@ -913,6 +982,8 @@ function expandGraveGem() {
 function nextWave() {
   if (state.gameOver) return;
 
+  recoverAdventurers();
+
   progressActiveQuests();
 
   progressQuestExpiry();
@@ -921,7 +992,7 @@ function nextWave() {
 
   progressRevives();
 
-  recoverWaitingAdventurers();
+  // recoverWaitingAdventurers();
 
   if (!state.gameOver) {
     state.wave++;

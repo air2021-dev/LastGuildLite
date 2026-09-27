@@ -22,6 +22,8 @@ const CONFIG = {
   graveExpandGold: 600,
 
   waitingHealRate: 0.2, // 대기 중 최대 HP 20% 회복
+  frontlineHealRate: 0.08, // 방어 중 최대 HP 8%회복
+
   questMinHpRate: 0.2, // 퀘스트 파견 최소 HP 비율
   retreatChance: 0.7, // 방어전 전투불능 시 후퇴 확률
 
