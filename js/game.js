@@ -867,7 +867,6 @@ function progressRevives() {
 }
 
 function recoverAdventurers() {
-  const result = [];
 
   for (const adv of state.adventurers) {
     // 모험가의 hp, maxhp에 따라서 회복 루프를 넘어갈지 말지 체크
@@ -886,7 +885,7 @@ function recoverAdventurers() {
     let recoveryType = null;
 
     if (isDefending(adv.id)) {
-      healRate = CONFIG.frontlineHealRate;
+      healRate = CONFIG.frontlineHealRate + getLinePriestHealRate(adv.id);
       recoveryType = "frontline";
     } else if (adv.status === "waiting") {
       healRate = CONFIG.waitingHealRate;
@@ -922,8 +921,6 @@ function recoverAdventurers() {
     //   healed: adv.hp - beforeHp,
     // });
   }
-
-  return result;
 }
 
 function recoverWaitingAdventurers() {
@@ -950,6 +947,28 @@ function recoverDefenseAdventurers() {
   }
 }
 
+function getLinePriestHealRate(advIds) {
+  const line1 = state.line1 ?? [];
+  const line2 = state.line2 ?? [];
+
+  let targetLine = null;
+
+  if(line1.includes(advIds)) targetLine = line1;
+  else if(line2.includes(advIds)) targetLine = line2;
+  else return 0;
+
+  for (const id of targetLine) {
+    const adv = getAdv(id);
+    
+    if(!adv) continue;
+
+    if (adv.job !== "priest") continue;
+
+    return JOBS.priest.healRate ?? 0;
+  }
+
+  return 0;
+}
 function isDefending(advIds) {
   const line1 = state.line1 ?? [];
   const line2 = state.line2 ?? [];
@@ -1111,7 +1130,7 @@ function nextWave() {
   recoverAdventurers();
 
   progressActiveQuests();
-  
+
   progressQuestExpiry();
 
   resolveDefense();

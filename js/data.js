@@ -4,7 +4,7 @@
 
 const TOWN_LEVELS = {
   1: {
-    line1: 1,
+    line1: 2,
     line2: 0,
 
     questSlots: 1,
@@ -12,7 +12,7 @@ const TOWN_LEVELS = {
   },
 
   2: {
-    line1: 2,
+    line1: 4,
     line2: 0,
 
     questSlots: 2,
@@ -20,24 +20,24 @@ const TOWN_LEVELS = {
   },
 
   3: {
-    line1: 3,
-    line2: 1,
+    line1: 4,
+    line2: 2,
 
     questSlots: 2,
     maxQuestRank: 2,
   },
 
   4: {
-    line1: 3,
-    line2: 2,
+    line1: 4,
+    line2: 4,
 
     questSlots: 3,
     maxQuestRank: 2,
   },
 
   5: {
-    line1: 3,
-    line2: 3,
+    line1: 4,
+    line2: 4,
 
     questSlots: 3,
     maxQuestRank: 3,
@@ -49,12 +49,13 @@ const TOWN_LEVELS = {
 ===================================================== */
 
 const JOBS = {
+  // 전투력 계산식 : 공격력 + 방어력 * 0.6 + 체력 * 0.08
   warrior: {
     name: "전사",
 
-    hp: 115,
-    attack: 22,
-    defense: 18,
+    hp: 140,
+    attack: 20,
+    defense: 20,
 
     colorClass: "warrior",
   },
@@ -62,9 +63,9 @@ const JOBS = {
   archer: {
     name: "궁수",
 
-    hp: 85,
-    attack: 28,
-    defense: 10,
+    hp: 100,
+    attack: 25,
+    defense: 15,
 
     colorClass: "archer",
   },
@@ -72,12 +73,24 @@ const JOBS = {
   mage: {
     name: "마법사",
 
-    hp: 72,
-    attack: 34,
-    defense: 7,
+    hp: 70,
+    attack: 35,
+    defense: 6,
 
     colorClass: "mage",
   },
+
+  priest: {
+    name: "사제",
+
+    hp: 85,
+    attack: 15,
+    defense: 10,
+
+    healRate: 0.1,
+
+    colorClass: "priest",
+  }
 };
 
 /* =====================================================
@@ -257,5 +270,136 @@ const QUEST_POOL = [
 
     power: 110,
     reward: 1150,
+  },
+];
+
+/* =====================================================
+   SYNERGIES
+===================================================== */
+
+const SYNERGIES = [
+  {
+    id: "",
+    name: "",
+    
+    requires: {
+      warrior: 1,
+      archer: 1,
+      mage: 1,
+      priest: 1,
+    },
+
+    effects: [
+      {
+        target: "",
+        job: "",
+        stat: "",
+        value: 0.0,
+      },
+    ],
+  }, // template
+
+  {
+    id: "cover_fire",
+    name: "엄호",
+    
+    requires: {
+      warrior: 1,
+      archer: 1,
+    },
+
+    effects: [
+      {
+        target: "ally",
+        job: "archer",
+        stat: "defense",
+        value: 0.25,
+      },
+    ],
+  },
+
+  {
+    id: "magic_barrier",
+    name: "마법 방벽",
+    
+    requires: {
+      warrior: 1,
+      mage: 1,
+    },
+
+    effects: [
+      {
+        target: "ally",
+        job: "mage",
+        stat: "attack",
+        value: 0.15,
+      },
+      {
+        target: "ally",
+        job: "warrior",
+        stat: "defense",
+        value: 0.10,
+      },
+    ],
+  },
+
+  {
+    id: "focused_fire",
+    name: "집중 사격",
+    
+    requires: {
+      archer: 2,
+    },
+
+    effects: [
+      {
+        target: "ally",
+        job: "archer",
+        stat: "attack",
+        value: 0.20,
+      },
+    ],
+  },
+
+  {
+    id: "mana_resonance",
+    name: "마법 공명",
+    
+    requires: {
+      mage: 2,
+    },
+
+    effects: [
+      {
+        target: "ally",
+        job: "mage",
+        stat: "attack",
+        value: 0.25,
+      },
+    ],
+  },
+
+  {
+    id: "balanced_party",
+    name: "균형 파티",
+    
+    requires: {
+      warrior: 1,
+      archer: 1,
+      mage: 1,
+    },
+
+    effects: [
+      {
+        target: "ally",
+        stat: "attack",
+        value: 0.10,
+      },
+      {
+        target: "ally",
+        stat: "defense",
+        value: 0.10,
+      },
+    ],
   },
 ];
