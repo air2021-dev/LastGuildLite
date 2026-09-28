@@ -725,7 +725,7 @@ function showWaveResult(result) {
         ${adv.healed > 0 ? `<div>회복 +${adv.healed}</div>` : ""}
         ${adv.damage > 0 ? `<div>피해 -${adv.damage}</div>` : ""}
         ${adv.expGain > 0 ? `<div>EXP +${adv.expGain}</div>` : ""}
-        ${adv.levelUp}
+        ${levelUp}
         ${status}
       </div>
     `;
