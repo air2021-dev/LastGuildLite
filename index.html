@@ -1,281 +1,272 @@
 <!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="./css/style.css" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
-    />
-    <title>마지막 길드 Prototype v2</title>
-  </head>
 
-  <body>
-    <div id="game">
-      <header>
-        <div class="resource">WAVE<strong id="wave"></strong></div>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>마지막 길드 Prototype v2</title>
+</head>
 
-        <div class="resource">
-          💰 GOLD
-          <strong id="gold"></strong>
-        </div>
+<body>
+  <div id="game">
+    <header>
+      <div class="resource">WAVE<strong id="wave"></strong></div>
 
-        <div class="resource">
-          💎 GEM
-          <strong id="gem"></strong>
-        </div>
+      <div class="resource">
+        💰 GOLD
+        <strong id="gold"></strong>
+      </div>
 
-        <div class="resource">
-          🏰 HP
-          <strong id="townHp"></strong>
-        </div>
+      <div class="resource">
+        💎 GEM
+        <strong id="gem"></strong>
+      </div>
 
-        <div class="resource">
-          🏙️ 도시
-          <strong id="townLevel"></strong>
-        </div>
-      </header>
+      <div class="resource">
+        🏰 HP
+        <strong id="townHp"></strong>
+      </div>
 
-      <!-- =========================
+      <div class="resource">
+        🏙️ 도시
+        <strong id="townLevel"></strong>
+      </div>
+    </header>
+
+    <!-- =========================
      POWER
 ========================= -->
 
-      <section>
-        <h2>⚔️ 다음 마왕군 공세</h2>
+    <section>
+      <h2>⚔️ 다음 마왕군 공세</h2>
 
-        <div class="power-box">
-          <div>
-            <div class="small">우리 방어력</div>
+      <div class="power-box">
+        <div>
+          <div class="small">우리 방어력</div>
 
-            <div id="ourPower" class="power-number"></div>
-          </div>
-
-          <div>
-            <div id="battlePrediction"></div>
-          </div>
-
-          <div>
-            <div class="small">마왕군 전투력</div>
-
-            <div id="enemyPower" class="power-number"></div>
-          </div>
+          <div id="ourPower" class="power-number"></div>
         </div>
-      </section>
 
-      <!-- =========================
+        <div>
+          <div id="battlePrediction"></div>
+        </div>
+
+        <div>
+          <div class="small">마왕군 전투력</div>
+
+          <div id="enemyPower" class="power-number"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================
      DEFENSE
 ========================= -->
 
-      <section>
-        <h2>🛡️ 방어선</h2>
+    <section>
+      <h2>🛡️ 방어선</h2>
 
-        <div class="battlefield">
-          <div class="zone">
-            <div class="zone-title">🚪 마왕군 진입</div>
-          </div>
-
-          <div class="zone" id="line2Zone">
-            <div class="zone-title">외곽 방어선 · 배치 2</div>
-
-            <div class="slots" id="line2"></div>
-
-            <div id="line2Synergy" class="synergy hidden"></div>
-          </div>
-
-          <div class="zone">
-            <div class="zone-title">최종 방어선 · 배치 1</div>
-
-            <div class="slots" id="line1"></div>
-
-            <div id="line1Synergy" class="synergy hidden"></div>
-          </div>
-
-          <div class="zone">
-            <div style="text-align: center">🏰 도시 중심</div>
-          </div>
+      <div class="battlefield">
+        <div class="zone">
+          <div class="zone-title">🚪 마왕군 진입</div>
         </div>
-      </section>
 
-      <!-- =========================
+        <div class="zone" id="line2Zone">
+          <div class="zone-title">외곽 방어선 · 배치 2</div>
+
+          <div class="slots" id="line2"></div>
+
+          <div id="line2Synergy" class="synergy hidden"></div>
+        </div>
+
+        <div class="zone">
+          <div class="zone-title">최종 방어선 · 배치 1</div>
+
+          <div class="slots" id="line1"></div>
+
+          <div id="line1Synergy" class="synergy hidden"></div>
+        </div>
+
+        <div class="zone">
+          <div style="text-align: center">🏰 도시 중심</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================
      ADVENTURER / GRAVE
 ========================= -->
 
-      <section>
-        <div class="management-tabs two-tabs">
-          <div
-            id="tabAdventurer"
-            class="management-tab active"
-            onclick="openPeopleTab('adventurer')"
-          >
-            👥 모험가
-          </div>
-
-          <div
-            id="tabGrave"
-            class="management-tab"
-            onclick="openPeopleTab('grave')"
-          >
-            ⚰️ 묘지
-          </div>
+    <section>
+      <div class="management-tabs two-tabs">
+        <div id="tabAdventurer" class="management-tab active" onclick="openPeopleTab('adventurer')">
+          👥 모험가
         </div>
 
-        <!-- ADVENTURERS -->
+        <div id="tabGrave" class="management-tab" onclick="openPeopleTab('grave')">
+          ⚰️ 묘지
+        </div>
+      </div>
 
-        <div id="contentAdventurer" class="tab-content active">
-          <div class="small" id="waitingCount"></div>
+      <!-- ADVENTURERS -->
 
-          <div id="waiting" class="adventurer-list"></div>
+      <div id="contentAdventurer" class="tab-content active">
+        <div class="small" id="waitingCount"></div>
 
-          <div class="toolbar">
-            <button onclick="hire()">
-              모험가 고용 💰<span id="hireCost"></span>
-            </button>
+        <div id="waiting" class="adventurer-list"></div>
 
-            <button onclick="expandWaitingGold()">대기소 +1 💰500</button>
+        <div class="toolbar">
+          <button onclick="hire()">
+            모험가 고용 💰<span id="hireCost"></span>
+          </button>
 
-            <button onclick="expandWaitingGem()">영구 +1 💎5</button>
-          </div>
+          <button onclick="expandWaitingGold()">대기소 +1 💰500</button>
 
-          <div id="selectedActions" class="toolbar"></div>
+          <button onclick="expandWaitingGem()">영구 +1 💎5</button>
         </div>
 
-        <!-- GRAVE -->
+        <div id="selectedActions" class="toolbar"></div>
+      </div>
 
-        <div id="contentGrave" class="tab-content">
-          <div class="small" id="graveCount"></div>
+      <!-- GRAVE -->
 
-          <div id="graveyard"></div>
+      <div id="contentGrave" class="tab-content">
+        <div class="small" id="graveCount"></div>
 
-          <div class="toolbar">
-            <button onclick="expandGraveGold()">묘지 +1 💰600</button>
+        <div id="graveyard"></div>
 
-            <button onclick="expandGraveGem()">영구 +1 💎5</button>
-          </div>
+        <div class="toolbar">
+          <button onclick="expandGraveGold()">묘지 +1 💰600</button>
+
+          <button onclick="expandGraveGem()">영구 +1 💎5</button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- =========================
+    <!-- =========================
      TOWN / QUEST
 ========================= -->
 
-      <section>
-        <div class="management-tabs two-tabs">
-          <div
-            id="tabTown"
-            class="management-tab active"
-            onclick="openWorldTab('town')"
-          >
-            🏙️ 도시
+    <section>
+      <div class="management-tabs two-tabs">
+        <div id="tabTown" class="management-tab active" onclick="openWorldTab('town')">
+          🏙️ 도시
+        </div>
+
+        <div id="tabQuest" class="management-tab" onclick="openWorldTab('quest')">
+          🗺️ 퀘스트
+        </div>
+      </div>
+
+      <!-- TOWN -->
+
+      <div id="contentTown" class="tab-content active">
+        <div class="town-info">
+          <div class="info-box">
+            도시 레벨
+            <br />
+            <strong id="townLevelCard"></strong>
           </div>
 
-          <div
-            id="tabQuest"
-            class="management-tab"
-            onclick="openWorldTab('quest')"
-          >
-            🗺️ 퀘스트
+          <div class="info-box">
+            방어 슬롯
+            <br />
+            <strong id="defenseSlotInfo"></strong>
+          </div>
+
+          <div class="info-box">
+            퀘스트 슬롯
+            <br />
+            <strong id="questSlotInfo"></strong>
+          </div>
+
+          <div class="info-box">
+            등장 퀘스트
+            <br />
+            <strong id="questRankInfo"></strong>
           </div>
         </div>
 
-        <!-- TOWN -->
-
-        <div id="contentTown" class="tab-content active">
-          <div class="town-info">
-            <div class="info-box">
-              도시 레벨
-              <br />
-              <strong id="townLevelCard"></strong>
-            </div>
-
-            <div class="info-box">
-              방어 슬롯
-              <br />
-              <strong id="defenseSlotInfo"></strong>
-            </div>
-
-            <div class="info-box">
-              퀘스트 슬롯
-              <br />
-              <strong id="questSlotInfo"></strong>
-            </div>
-
-            <div class="info-box">
-              등장 퀘스트
-              <br />
-              <strong id="questRankInfo"></strong>
-            </div>
-          </div>
-
-          <div class="toolbar">
-            <button id="townUpgradeButton" onclick="upgradeTown()"></button>
-          </div>
-
-          <div id="townNextInfo" class="small"></div>
+        <div class="toolbar">
+          <button id="townUpgradeButton" onclick="upgradeTown()"></button>
         </div>
 
-        <!-- QUEST -->
+        <div id="townNextInfo" class="small"></div>
+      </div>
 
-        <div id="contentQuest" class="tab-content">
-          <div class="small" id="questBoardInfo"></div>
+      <!-- QUEST -->
 
-          <div id="quests" class="quest-list"></div>
-        </div>
-      </section>
+      <div id="contentQuest" class="tab-content">
+        <div class="small" id="questBoardInfo"></div>
 
-      <!-- =========================
+        <div id="quests" class="quest-list"></div>
+      </div>
+    </section>
+
+    <!-- =========================
      LOG
 ========================= -->
 
-      <section>
-        <h2>📜 길드 기록</h2>
+    <section>
+      <h2>📜 길드 기록</h2>
 
-        <div class="log" id="log"></div>
+      <div class="log" id="log"></div>
 
-        <div class="toolbar">
-          <button id="waveButton" onclick="nextWave()">▶ 다음 웨이브</button>
-        </div>
-      </section>
+      <div class="toolbar">
+        <button id="waveButton" onclick="nextWave()">▶ 다음 웨이브</button>
+      </div>
+    </section>
 
-      <!-- =========================
+    <!-- =========================
      GAME OVER
 ========================= -->
 
-      <section id="gameOverPanel" class="gameover hidden">
-        <h2>☠️ 도시가 함락되었습니다</h2>
+    <section id="gameOverPanel" class="gameover hidden">
+      <h2>☠️ 도시가 함락되었습니다</h2>
 
-        <div class="small">
-          묘지에 있는 사망자는 승계할 수 없습니다. 살아남은 모험가 중 다음
-          길드로 데려갈 사람을 선택하세요.
-        </div>
+      <div class="small">
+        묘지에 있는 사망자는 승계할 수 없습니다. 살아남은 모험가 중 다음
+        길드로 데려갈 사람을 선택하세요.
+      </div>
 
-        <div id="inheritList"></div>
+      <div id="inheritList"></div>
 
-        <div class="toolbar">
-          <button onclick="expandInheritance()">영구 승계 +1 💎10</button>
+      <div class="toolbar">
+        <button onclick="expandInheritance()">영구 승계 +1 💎10</button>
 
-          <button onclick="startNewRun()">새 도시에서 시작</button>
-        </div>
-      </section>
+        <button onclick="startNewRun()">새 도시에서 시작</button>
+      </div>
+    </section>
 
-      <section>
-        <h2>⚙️ Prototype</h2>
+    <section>
+      <h2>⚙️ Prototype</h2>
 
-        <div class="small">
-          모험가 선택 → 방어 슬롯 선택 또는 퀘스트 파견. 도시를 성장시키면
-          방어선과 퀘스트 수준이 확장됩니다.
-        </div>
+      <div class="small">
+        모험가 선택 → 방어 슬롯 선택 또는 퀘스트 파견. 도시를 성장시키면
+        방어선과 퀘스트 수준이 확장됩니다.
+      </div>
 
-        <div class="toolbar">
-          <button onclick="resetSave()">저장 초기화</button>
-        </div>
-      </section>
+      <div class="toolbar">
+        <button onclick="resetSave()">저장 초기화</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="wave-result-modal" class="modal hidden">
+    <div class="modal-content">
+      <div id="wave-result-content"></div>
+      <br>
+      <button onclick="closeWaveResult()">확인</button>
     </div>
+  </div>
 
-    <script src="./js/config.js"></script>
-    <script src="./js/data.js"></script>
-    <script src="./js/state.js"></script>
-    <script src="./js/game.js"></script>
-    <script src="./js/ui.js"></script>
-    <script src="./js/main.js"></script>
-  </body>
+  <script src="./js/config.js"></script>
+  <script src="./js/data.js"></script>
+  <script src="./js/state.js"></script>
+  <script src="./js/game.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+
 </html>

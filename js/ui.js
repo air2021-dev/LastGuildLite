@@ -597,6 +597,97 @@ function renderLogs() {
 }
 
 /* =====================================================
+   WAVE RESULT UI
+===================================================== */
+function showWaveResult(result) {
+  const modal = document.getElementById("wave-result-modal");
+
+  const content = document.getElementById("wave-result-content");
+
+  const adventurers = Object.values(result.adventurers);
+
+  let html = `
+    <h2>WAVE ${result.wave} 결과</h2>
+
+    <div> 적 전투력
+      <strong> ${Math.round(result.enemyPower)}</strong>
+    </div>
+
+    <div> 도시 HP ${result.townHpBefore} → ${result.townHpAfter} </div>
+
+    <hr>
+
+    <h3>모험가 결과</h3>
+  `;
+
+  for (const adv of adventurers) {
+    /*
+     * 아무 일도 없었던 대기 모험가는
+     * 결과에서 생략해도 됨.
+     */
+
+    if (
+      adv.heald === 0 && 
+      adv.damage === 0 && 
+      adv.expGain === 0 && 
+      !adv.retreated && 
+      !adv.died && 
+      !adv.levelUp
+    ) continue;
+
+    let status = "";
+
+    if (adv.died) {
+      status = `
+        <div class="result-danger">🪦 사망</div>
+      `;
+    } else if (adv.retreated) {
+      status = `
+        <div class="result-danger">🤕 후퇴 성공</div>
+      `;
+    }
+
+    let levelUp = "";
+
+    if(adv.levelUp) {
+      levelUp = `
+        <div class="result-level-up">
+          ⭐️ LEVEL UP ${adv.levelBefore} → ${adv.levelAfter}
+        </div>
+      `;
+    }
+
+    html += `
+      <div class="wave-result-adventurer">
+        <strong>${adv.name}</strong>
+        <span>${JOBS[adv.job].name} Lv.${adv.levelAfter}</span>
+        <div>HP ${Math.round(adv.hpBefore)} → ${Math.round(adv.hpAfter)}</div>
+        ${adv.healed > 0 ? `<div>회복 +${adv.healed}</div>` : "" }
+        ${adv.damage > 0 ? `<div>피해 -${adv.damage}</div>` : "" }
+        ${adv.expGain > 0 ? `<div>EXP +${adv.expGain}</div>` : "" }
+        ${adv.levelUp}
+        ${status}
+      </div>
+    `;
+  }
+
+  html += `
+    <hr>
+
+    <div>Gold +${result.goldAfter - result.goldBefore}</div>
+    <div>Gem +${result.gemAfter - result.gemBefore}</div>
+  `;
+
+  content.innerHTML = html;
+
+  modal.classList.remove("hidden");
+}
+
+function closeWaveResult(){
+  document.getElementById("wave-result-modal").classList.add("hidden");
+}
+
+/* =====================================================
    GAME OVER UI
 ===================================================== */
 

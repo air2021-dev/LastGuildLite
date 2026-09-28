@@ -6,6 +6,8 @@ let state = null;
 
 let selectedId = null;
 
+let currentWaveResult = null;
+
 // let activeTab="adventurer";
 let activePeopleTab = "adventurer";
 let activeWorldTab = "town";

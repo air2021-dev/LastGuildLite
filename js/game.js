@@ -57,6 +57,8 @@ function requiredExp(level) {
 }
 
 function gainExp(adv, amount) {
+  const beforeLevel = adv.level;
+
   adv.exp += amount;
 
   while (adv.exp >= requiredExp(adv.level)) {
@@ -79,6 +81,23 @@ function gainExp(adv, amount) {
     );
 
     log(`${adv.name}이 Lv.${adv.level}이 되었습니다.`);
+  }
+
+  const result = waveAdvResult(adv);
+
+  if (result) {
+
+    result.expGain += amount;
+
+    if (adv.Level > beforeLevel) {
+      result.levelUp = true;
+
+      result.events.push({
+        type: "levelUp",
+        from: beforeLevel,
+        to: adv.level,
+      })
+    }
   }
 }
 
@@ -596,7 +615,22 @@ function resolveLine(slotIds, incoming, label) {
 
     damage = Math.round(damage * randomRange(0.8, 1.2));
 
-    adv.hp -= damage;
+    const beforeHp = adv.hp;
+
+    adv.hp = Math.max(0, adv.hp - damage);
+
+    const actualDamage = beforeHp - adv.hp;
+
+    const result = waveAdvResult(adv);
+
+    if (result) {
+      result.damage += actualDamage;
+
+      result.events.push({
+        type: "damage",
+        amount: actualDamage,
+      });
+    }
 
     if (adv.hp <= 0) {
       handleKnockout(adv);
@@ -643,6 +677,7 @@ function resolveDefense() {
   }
 }
 
+
 /* =====================================================
    DEATH
 ===================================================== */
@@ -662,6 +697,8 @@ function handleKnockout(adv) {
   const hasWaitingSpace = waitingAdventurers().length < waitingCapacity();
   const retreatSuccess = Math.random() < CONFIG.retreatChance;
 
+  const result = waveAdvResult(adv);
+
   if (retreatSuccess && hasWaitingSpace) {
     removeFromDefense(adv.id);
 
@@ -670,6 +707,14 @@ function handleKnockout(adv) {
 
     log(`${adv.name}이 전투불능 상태로 후퇴했습니다.`);
 
+    if (result) {
+      result.retreated = true;
+
+      result.events.push({
+        type: "retreat",
+      });
+    }
+
     return;
   }
 
@@ -677,6 +722,14 @@ function handleKnockout(adv) {
     log(`대기소에 자리가 없어 ${adv.name}가 사망했습니다.`);
   } else {
     log(`${adv.name}이 후퇴에 실패하여 사망했습니다.`);
+  }
+
+  if (result) {
+    result.died = true;
+
+    result.events.push({
+      type: "death",
+    })
   }
 
   killAdventurer(adv);
@@ -830,14 +883,14 @@ function recoverAdventurers() {
     // 여기서부터 모험가의 상태에 따라서 회복량이 달라진다.
 
     let healRate = 0.0;
-    let recoverType = null;
+    let recoveryType = null;
 
     if (isDefending(adv.id)) {
       healRate = CONFIG.frontlineHealRate;
-      recoverType = "frontline";
+      recoveryType = "frontline";
     } else if (adv.status === "waiting") {
       healRate = CONFIG.waitingHealRate;
-      recoverType = "waiting";
+      recoveryType = "waiting";
     }
     else continue;
 
@@ -847,14 +900,27 @@ function recoverAdventurers() {
 
     adv.hp = Math.min(adv.maxHp, adv.hp + healAmount);
 
-    result.push({
-      adventureId: adv.id,
-      name: adv.name,
-      type: recoverType,
-      beforeHp,
-      afterHp: adv.hp,
-      healed: adv.hp - beforeHp,
-    });
+    const actualHeal = adv.hp - beforeHp;
+    const result = waveAdvResult(adv);
+
+    if (result) {
+      result.healed += actualHeal;
+
+      result.events.push({
+        type: "heal",
+        amount: actualHeal,
+        source: recoveryType,
+      })
+    }
+
+    // result.push({
+    //   adventureId: adv.id,
+    //   name: adv.name,
+    //   type: recoveryType,
+    //   beforeHp,
+    //   afterHp: adv.hp,
+    //   healed: adv.hp - beforeHp,
+    // });
   }
 
   return result;
@@ -979,13 +1045,73 @@ function expandGraveGem() {
    WAVE
 ===================================================== */
 
+
+function beginWaveResult() {
+  currentWaveResult = {
+    wave: state.wave,
+
+    enemyPower: enemyPower(),
+
+    townHpBefore: state.townHp,
+    townHpAfter: state.townHp,
+
+    goldBefore: state.gold,
+    goldAfter: state.gold,
+
+    gemBefore: state.gem ?? 0,
+    gemAfter: state.gem ?? 0,
+
+    lines: {
+      outer: {
+        stopped: 0,
+      },
+
+      final: {
+        stopped: 0,
+      },
+    },
+
+    adventurers: {},
+  };
+
+  for (const adv of state.adventurers) {
+    currentWaveResult.adventurers[adv.id] = {
+      id: adv.id,
+      name: adv.name,
+      job: adv.job,
+
+      levelBefore: adv.level,
+      levelAfter: adv.level,
+
+      hpBefore: adv.hp,
+      hpAfter: adv.hp,
+
+      expBefore: adv.exp,
+      expAfter: adv.exp,
+
+      healed: 0,
+      damage: 0,
+      expGain: 0,
+
+      retreated: false,
+      died: false,
+      levelUp: false,
+
+      events: [],
+    };
+  }
+}
+
+
 function nextWave() {
   if (state.gameOver) return;
+
+  beginWaveResult();
 
   recoverAdventurers();
 
   progressActiveQuests();
-
+  
   progressQuestExpiry();
 
   resolveDefense();
@@ -993,6 +1119,8 @@ function nextWave() {
   progressRevives();
 
   // recoverWaitingAdventurers();
+
+  finishWaveResult();
 
   if (!state.gameOver) {
     state.wave++;
@@ -1002,7 +1130,66 @@ function nextWave() {
 
   save();
   render();
+
+  showWaveResult(currentWaveResult);
 }
+
+function waveAdvResult(adv) {
+  if (!currentWaveResult) return null;
+
+  if (!currentWaveResult.adventurers[adv.id]) {
+    currentWaveResult.adventurers[adv.id] = {
+      id: adv.id,
+      name: adv.name,
+      job: adv.job,
+
+      levelBefore: adv.level,
+      levelAfter: adv.level,
+
+      hpBefore: adv.hp,
+      hpAfter: adv.hp,
+
+      expBefore: adv.exp,
+      expAfter: adv.exp,
+
+      healed: 0,
+      damage: 0,
+      expGain: 0,
+
+      retreated: false,
+      died: false,
+      levelUp: false,
+
+      events: [],
+    };
+  }
+
+  return currentWaveResult.adventurers[adv.id];
+}
+
+function finishWaveResult() {
+
+  if (!currentWaveResult) return;
+
+  currentWaveResult.townHpAter = state.townHp;
+  currentWaveResult.goldAfter = state.gold;
+  currentWaveResult.gemAfter = state.gem ?? 0;
+
+  for (const result of Object.values(currentWaveResult.adventurers)) {
+
+    const adv = getAdv(result.id);
+
+    if (adv) {
+      result.hpAfter = adv.hp;
+      result.levelAfter = adv.level;
+      result.expAfter = adv.exp;
+    } else if (result.died) {
+      result.hpAfter = 0;
+    }
+  }
+}
+
+
 
 /* =====================================================
    INHERITANCE
