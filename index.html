@@ -10,40 +10,47 @@
 
 <body>
   <div id="game">
-    <header>
-      <div class="resource">WAVE<strong id="wave"></strong></div>
-
-      <div class="resource">
-        💰 GOLD
-        <strong id="gold"></strong>
+    <header id="gameHeader">
+      <div class="header-column">
+        <div class="header-row header-status">
+          <div class="resource">WAVE<strong id="wave"></strong></div>
+          
+          <div class="resource">💰 GOLD<strong id="gold"></strong></div>
+          
+          <div class="resource">💎 GEM<strong id="gem"></strong></div>
+          
+          <div class="resource">🏙️ 도시<strong id="townLevel"></strong></div>
+          
+          <div class="resource">🏰 HP<strong id="townHp"></strong></div>
+        </div>
+        
+        <div class="header-row header-battle">
+          
+          <div class="resource">⚔️우리 전투력<strong id="headerDefensePower"></strong></div>
+          
+          <div id="headerRisk" class="battle-rist safe">안정적</div>
+          
+          <div class="resource">👿 마왕군 전투력<strong id="headerEnemyPower"></strong></div>
+          
+        </div>
       </div>
-
-      <div class="resource">
-        💎 GEM
-        <strong id="gem"></strong>
+      
+      <div class="header-column">
+        <button class="next-wave-button" onclick="nextWave()">►</button>
       </div>
-
-      <div class="resource">
-        🏰 HP
-        <strong id="townHp"></strong>
-      </div>
-
-      <div class="resource">
-        🏙️ 도시
-        <strong id="townLevel"></strong>
-      </div>
+      
     </header>
 
     <!-- =========================
      POWER
 ========================= -->
 
-    <section>
+    <section id="nextAssaultPanel" class="card">
       <h2>⚔️ 다음 마왕군 공세</h2>
 
       <div class="power-box">
         <div>
-          <div class="small">우리 방어력</div>
+          <div class="small">우리 전투력</div>
 
           <div id="ourPower" class="power-number"></div>
         </div>

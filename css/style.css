@@ -62,25 +62,75 @@ button:disabled {
 ========================= */
 
 header {
-  display: grid;
+  display: flex;
+  
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  
+  padding: 12px 16px;
 
-  grid-template-columns: repeat(5, 1fr);
+  background: rgba(24, 24, 28, 0.96);
+
+  border-bottom: 1px solid #3c3c42;
+
+  backdrop-filter: blur(8px);
+
+  /* grid-template-columns: repeat(5, 1fr);
 
   gap: 5px;
 
-  padding: 9px;
-
-  background: var(--panel);
-
   border: 1px solid var(--border);
 
-  border-radius: 9px;
+  border-radius: 9px; */
+  align-items: center;
 
-  position: sticky;
+  justify-content: center;
+}
 
-  top: 0;
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 
-  z-index: 20;
+  min-width: 0;
+}
+
+.header-column {
+  margin: 0px 10px;
+}
+
+.header-status {
+  padding-bottom: 8px;
+}
+
+.header-battle {
+  padding-top: 8px;
+
+  max-height: 0;
+  opacity: 0;
+
+  overflow: hidden;
+
+  padding-top: 0px;
+  padding-bottom: 0px;
+
+  transition:
+    max-height 0.2s ease,
+    opacity 0.2s ease,
+    padding 0.2s ease;
+
+  border-top: 1px solid #333;
+}
+
+header.show-battle-info .header-battle {
+  max-height: 60px;
+
+  opacity: 1;
+
+  padding-top: 6px;
+  padding-bottom: 8px;
 }
 
 .resource {
@@ -97,6 +147,38 @@ header {
   color: var(--text);
 
   font-size: 16px;
+}
+
+.battle-rist {
+  padding: 4px 10px;
+  border-radius: 6px;
+
+  font-size: 13px;
+  font-weight: bold;
+
+  white-space: nowrap;
+}
+
+.battle-risk.safe {
+  background: #23452d;
+  color: #9ddca8;
+}
+
+.battle-risk.caution {
+  background: #55491f;
+  color: #ead36d;
+}
+
+.battle-risk.dnager {
+  background: #572525;
+  color: #ef8585;
+}
+
+.next-wave-button{
+  margin-left: auto;
+  min-height: 40px;
+  padding: 8px 16px;
+  white-space: nowrap;  
 }
 
 /* =========================

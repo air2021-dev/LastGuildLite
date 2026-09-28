@@ -100,10 +100,13 @@ function render() {
 
   document.getElementById("gem").textContent = state.meta.gem;
 
-  document.getElementById("townHp").textContent =
-    `${state.townHp}/${CONFIG.townHp}`;
+  document.getElementById("townHp").textContent = `${state.townHp}/${CONFIG.townHp}`;
 
   document.getElementById("townLevel").textContent = `Lv.${state.townLevel}`;
+
+  document.getElementById("headerDefensePower").textContent = totalDefensePower();
+
+  document.getElementById("headerEnemyPower").textContent = enemyPower();
 
   document.getElementById("ourPower").textContent = totalDefensePower();
 
@@ -111,10 +114,13 @@ function render() {
 
   const predict = battlePrediction();
 
+  const risk = document.getElementById("headerRisk");
   const predictionEl = document.getElementById("battlePrediction");
 
-  predictionEl.textContent = predict.text;
+  risk.textContent = predict.text;
+  risk.className = `battle-risk ${predict.className}`;
 
+  predictionEl.textContent = predict.text;
   predictionEl.className = predict.className;
 
   renderTown();
@@ -139,6 +145,60 @@ function render() {
   openPeopleTab(activePeopleTab);
 
   openWorldTab(activeWorldTab);
+}
+
+/* =====================================================
+   HEADER UI
+===================================================== */
+
+function initHeaderBattleObserver() {
+  const header = document.getElementById("gameHeader");
+  const assaultPanel = document.getElementById("nextAssaultPanel");
+
+  if (!header || !assaultPanel) {
+    console.error("Header Battle Observer initialize failed.", { header, assaultPanel, });
+    return;
+  }
+
+  function updateHeaderBattleInfo() {
+    const headerRect = header.getBoundingClientRect();
+    const panelRect = assaultPanel.getBoundingClientRect();
+
+    /*
+     * 공세 카드의 하단이
+     * sticky header의 하단 위로 올라갔다면
+     * 화면에서 사실상 보이지 않는 상태
+     */
+
+    const panelHidden = panelRect.bottom <= (headerRect.bottom + 70);
+    header.classList.toggle("show-battle-info", panelHidden);
+  }
+
+  window.addEventListener("scroll", updateHeaderBattleInfo);
+  window.addEventListener("resize", updateHeaderBattleInfo);
+
+  updateHeaderBattleInfo();
+
+  // const observer = new IntersectionObserver(
+  //   entries => {
+  //     const entry = entries[0];
+
+  //     /*
+  //      * 다음 마왕군 공세가 보이면
+  //      * Header의 전투 정보 숨김
+  //      * 
+  //      * 화면에서 사라지면
+  //      * Header에 표시
+  //      */
+  //     header.classList.toggle("show-battle-info", !entry.isIntersecting);
+  //   },
+  //   {
+  //     threshold: 0
+  //   }
+  // );
+
+  // observer.observe(assaultPanel);
+
 }
 
 /* =====================================================
@@ -627,11 +687,11 @@ function showWaveResult(result) {
      */
 
     if (
-      adv.heald === 0 && 
-      adv.damage === 0 && 
-      adv.expGain === 0 && 
-      !adv.retreated && 
-      !adv.died && 
+      adv.heald === 0 &&
+      adv.damage === 0 &&
+      adv.expGain === 0 &&
+      !adv.retreated &&
+      !adv.died &&
       !adv.levelUp
     ) continue;
 
@@ -649,7 +709,7 @@ function showWaveResult(result) {
 
     let levelUp = "";
 
-    if(adv.levelUp) {
+    if (adv.levelUp) {
       levelUp = `
         <div class="result-level-up">
           ⭐️ LEVEL UP ${adv.levelBefore} → ${adv.levelAfter}
@@ -662,9 +722,9 @@ function showWaveResult(result) {
         <strong>${adv.name}</strong>
         <span>${JOBS[adv.job].name} Lv.${adv.levelAfter}</span>
         <div>HP ${Math.round(adv.hpBefore)} → ${Math.round(adv.hpAfter)}</div>
-        ${adv.healed > 0 ? `<div>회복 +${adv.healed}</div>` : "" }
-        ${adv.damage > 0 ? `<div>피해 -${adv.damage}</div>` : "" }
-        ${adv.expGain > 0 ? `<div>EXP +${adv.expGain}</div>` : "" }
+        ${adv.healed > 0 ? `<div>회복 +${adv.healed}</div>` : ""}
+        ${adv.damage > 0 ? `<div>피해 -${adv.damage}</div>` : ""}
+        ${adv.expGain > 0 ? `<div>EXP +${adv.expGain}</div>` : ""}
         ${adv.levelUp}
         ${status}
       </div>
@@ -683,7 +743,7 @@ function showWaveResult(result) {
   modal.classList.remove("hidden");
 }
 
-function closeWaveResult(){
+function closeWaveResult() {
   document.getElementById("wave-result-modal").classList.add("hidden");
 }
 

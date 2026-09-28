@@ -2,5 +2,14 @@
    START
 ===================================================== */
 
-load();
-render();
+function initGame(){
+
+   load();
+   // repairAdventurerData();
+   render();
+   initHeaderBattleObserver();
+}
+
+initGame();
+
+
