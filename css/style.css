@@ -63,11 +63,11 @@ button:disabled {
 
 header {
   display: flex;
-  
+
   position: sticky;
   top: 0;
   z-index: 1000;
-  
+
   padding: 12px 16px;
 
   background: rgba(24, 24, 28, 0.96);
@@ -178,7 +178,7 @@ header.show-battle-info .header-battle {
   margin-left: auto;
   min-height: 40px;
   padding: 8px 16px;
-  white-space: nowrap;  
+  white-space: nowrap;
 }
 
 /* =========================
@@ -293,10 +293,29 @@ h2 {
 
 .battlefield {
   display: flex;
+  flex-direction: row-reverse;
 
-  flex-direction: column;
+  /* justify-content: space-between; */
+  align-items: stretch;
 
-  gap: 6px;
+  gap: 8px;
+
+  width: 100%;
+}
+
+.battlefield > .zone {
+  min-width: 0;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #3e4652;
+  border-radius: 8px;
+  background: #1b1f24;
+}
+
+#line1Zone,
+#line2Zone {
+  flex: 1 1 0;
+  min-width: 200px;
 }
 
 .zone {
@@ -309,13 +328,156 @@ h2 {
   border-radius: 7px;
 }
 
+.battlefield > .zone:first-child,
+.battlefield > .zone:last-child {
+  flex: 0 0 56px;
+  width: 56px;
+  padding: 6px 4px;
+}
+
 .zone-title {
   margin-bottom: 5px;
 
-  color: var(--sub);
+  text-align: center;
+
+  font-size: 13px;
+  line-height: 1.2;
+
+  color: #c5cad3;
+
+  white-space: nowrap;
+}
+
+.formation {
+  display: grid;
+
+  /* grid-template-columns: repeat(2, minmax(0, 1fr)); */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+  gap: 6px;
+
+  width: 100%;
+}
+
+.formation-position {
+  min-width: 0;
+}
+
+.position-title {
+  margin-bottom: 3px;
 
   font-size: 11px;
+  font-weight: 600;
+
+  line-height: 1;
+
+  color: #d6d9df;
+
+  text-align: center;
 }
+
+.position-slots {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.defense-line {
+  flex: 0 1 180px;
+
+  min-width: 145px;
+  max-width: 190px;
+
+  padding: 7px;
+
+  box-sizing: border-box;
+}
+
+.defense-line-title {
+  margin-bottom: 5px;
+  text-align: center;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.defense-slot.locked {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================
+    중요:
+    line1Rear 자체도 class="slot"이므로
+    바깥 컨테이너와 실제 슬롯을 구분
+ ========================================*/
+
+ #line1Rear, #line1Front, #line2Rear, #line2Front {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+
+  width: 100%;
+
+  padding: 0;
+
+  min-height: 0;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+ }
+
+ #line1Rear > .slot,
+ #line1Front > .slot,
+ #line2Rear > .slot,
+ #line2Front > .slot {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 0;
+  min-height: 34px;
+
+  padding: 4px 3px;
+
+  box-sizing: border-box;
+
+  border: 1px dashed #46505e;
+  border-radius: 6px;
+
+  background: #1a1e23;
+
+  font-size: 10px;
+
+  text-align: center;
+ }
+
+ #line1Rear > .slot.occupied,
+ #line1Front > .slot.occupied,
+ #line2Rear > .slot.occupied,
+ #line2Front > .slot.occupied {
+  border-style: solid;
+  border-color: #68717f;
+
+  background: #1d2127;
+ }
+
+ #line1Rear > .slot.locked,
+ #line1Front > .slot.locked,
+ #line2Rear > .slot.locked,
+ #line2Front > .slot.locked {
+  color: #665b44;
+
+  background: #191c20;
+
+  opacity: 0.7;
+ }
 
 .slots {
   display: grid;
@@ -361,6 +523,33 @@ h2 {
   color: white;
 }
 
+.slot.occupied > div {
+  width: 100%;
+  overflow: hidden;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.slot.occupied strong {
+  font-size: 10px;
+}
+
+.slot.occupied .exp-bar {
+  width: 100%;
+  height: 3px;
+
+  margin-top: 3px;
+
+  overflow: hidden;
+
+  border-radius: 2px;
+
+  background: #383e47;
+}
+
+.slot.occupied .exp-fill {
+  height: 100%;
+}
 .slot.possible {
   border-color: #ddbb63;
 }
@@ -370,10 +559,19 @@ h2 {
   box-shadow: 0 0 0 1px rgba(224, 79, 79, 0.25);
 }
 
+.slots#line1,
+.slots#line2 {
+  display: none;
+}
+
+/* =========================
+   시너지
+========================= */
+
 .synergy {
   margin-top: 5px;
 
-  padding: 5px;
+  padding: 5px 7px;
 
   border-radius: 5px;
 
@@ -382,6 +580,10 @@ h2 {
   color: #b9d997;
 
   font-size: 10px;
+}
+
+.synerg.hidden {
+  display:none;
 }
 
 .hp-bar {
@@ -409,6 +611,41 @@ h2 {
 .exp-fill {
   height: 100%;
   background: #6f8fd8;
+}
+
+.zone-title.non-slot{
+  display: flex;
+
+  height: stretch;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+}
+
+.zone-title-icon{
+  line-height: 1;
+  font-size: 18px;
+}
+
+.zone-title-label{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1.1;
+  font-weight: bold;
+}
+
+.enemy-enter-label{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  line-height: 1.1;
+  font-weight: bold;
+}
+
+.enemy-enter-icon{
+  line-height: 1;
+  font-size: 18px;
 }
 
 /* =========================

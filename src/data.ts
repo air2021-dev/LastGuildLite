@@ -2,10 +2,27 @@
    TOWN LEVEL
 ===================================================== */
 
-const TOWN_LEVELS = {
+const TOWN_LEVELS: Record<number, {
+  line1: number;
+  line2: number;
+  line1Rear: boolean;
+  line1Front: boolean;
+  line2Rear: boolean;
+  line2Front: boolean;
+  maxDeply: number;
+  questSlots: number;
+  maxQuestRank: number;
+}> = {
   1: {
     line1: 2,
     line2: 0,
+
+    line1Rear: true,
+    line1Front: true,
+    line2Rear: false,
+    line2Front: false,
+
+    maxDeply: 1,
 
     questSlots: 1,
     maxQuestRank: 1,
@@ -15,6 +32,13 @@ const TOWN_LEVELS = {
     line1: 4,
     line2: 0,
 
+    line1Rear: true,
+    line1Front: true,
+    line2Rear: false,
+    line2Front: false,
+
+    maxDeply: 2,
+
     questSlots: 2,
     maxQuestRank: 1,
   },
@@ -22,6 +46,13 @@ const TOWN_LEVELS = {
   3: {
     line1: 4,
     line2: 2,
+
+    line1Rear: true,
+    line1Front: true,
+    line2Rear: true,
+    line2Front: true,
+
+    maxDeply: 4,
 
     questSlots: 2,
     maxQuestRank: 2,
@@ -31,6 +62,13 @@ const TOWN_LEVELS = {
     line1: 4,
     line2: 4,
 
+    line1Rear: true,
+    line1Front: true,
+    line2Rear: true,
+    line2Front: true,
+
+    maxDeply: 5,
+
     questSlots: 3,
     maxQuestRank: 2,
   },
@@ -38,6 +76,13 @@ const TOWN_LEVELS = {
   5: {
     line1: 4,
     line2: 4,
+
+    line1Rear: true,
+    line1Front: true,
+    line2Rear: true,
+    line2Front: true,
+
+    maxDeply: 6,
 
     questSlots: 3,
     maxQuestRank: 3,
@@ -48,7 +93,7 @@ const TOWN_LEVELS = {
    JOBS
 ===================================================== */
 
-const JOBS = {
+const JOBS: Record<JobId, JobData> = {
   // 전투력 계산식 : 공격력 + 방어력 * 0.6 + 체력 * 0.08
   warrior: {
     name: "전사",
@@ -58,6 +103,20 @@ const JOBS = {
     defense: 20,
 
     colorClass: "warrior",
+
+    positionBonus: {
+      front: {
+        attack: 1.0,
+        defense: 1.3,
+        heal: 0.90,
+      },
+      rear: {
+        attack: 0.90,
+        defense: 1.0,
+        heal: 1.30,
+      },
+    },
+
   },
 
   archer: {
@@ -68,6 +127,19 @@ const JOBS = {
     defense: 15,
 
     colorClass: "archer",
+
+    positionBonus: {
+      front: {
+        attack: 1.15,
+        defense: 0.90,
+        heal: 1.0,
+      },
+      rear: {
+        attack: 1.00,
+        defense: 1.20,
+        heal: 1.15,
+      },
+    },
   },
 
   mage: {
@@ -78,6 +150,19 @@ const JOBS = {
     defense: 6,
 
     colorClass: "mage",
+
+    positionBonus: {
+      front: {
+        attack: 1.6,
+        defense: 0.3,
+        heal: 0.9,
+      },
+      rear: {
+        attack: 1.00,
+        defense: 1.10,
+        heal: 1.15,
+      },
+    },
   },
 
   priest: {
@@ -90,6 +175,19 @@ const JOBS = {
     healRate: 0.1,
 
     colorClass: "priest",
+
+    positionBonus: {
+      front: {
+        attack: 0.90,
+        defense: 0.90,
+        heal: 1.0,
+      },
+      rear: {
+        attack: 1.00,
+        defense: 1.20,
+        heal: 1.30,
+      },
+    },
   }
 };
 
@@ -97,7 +195,7 @@ const JOBS = {
    NAMES
 ===================================================== */
 
-const NAMES = [
+const NAMES: string[] = [
   "아렌",
   "리아",
   "테오",
@@ -134,6 +232,23 @@ const NAMES = [
   "노아",
   "카엘",
 ];
+
+/* =====================================================
+   LINES
+===================================================== */
+const LINES: Record<LineId, { id: LineId; positions: readonly Position[] }> = {
+  line1: {
+    id: "line1",
+    positions: ["rear", "front"],
+
+  },
+  line2: {
+    id: "line2",
+    positions: ["rear", "front"],
+  }
+};
+
+const LINE_POSITIONS: readonly Position[] = ["rear", "front"];
 
 /* =====================================================
    QUEST POOL
@@ -281,7 +396,7 @@ const SYNERGIES = [
   {
     id: "",
     name: "",
-    
+
     requires: {
       warrior: 1,
       archer: 1,
@@ -302,7 +417,7 @@ const SYNERGIES = [
   {
     id: "cover_fire",
     name: "엄호",
-    
+
     requires: {
       warrior: 1,
       archer: 1,
@@ -321,7 +436,7 @@ const SYNERGIES = [
   {
     id: "magic_barrier",
     name: "마법 방벽",
-    
+
     requires: {
       warrior: 1,
       mage: 1,
@@ -346,7 +461,7 @@ const SYNERGIES = [
   {
     id: "focused_fire",
     name: "집중 사격",
-    
+
     requires: {
       archer: 2,
     },
@@ -364,7 +479,7 @@ const SYNERGIES = [
   {
     id: "mana_resonance",
     name: "마법 공명",
-    
+
     requires: {
       mage: 2,
     },
@@ -382,7 +497,7 @@ const SYNERGIES = [
   {
     id: "balanced_party",
     name: "균형 파티",
-    
+
     requires: {
       warrior: 1,
       archer: 1,

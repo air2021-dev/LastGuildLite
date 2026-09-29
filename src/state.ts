@@ -2,11 +2,11 @@
    GAME STATE
 ===================================================== */
 
-let state = null;
+let state: GameState;
 
-let selectedId = null;
+let selectedId: AdventurerId | null = null;
 
-let currentWaveResult = null;
+let currentWaveResult: WaveResult | null = null;
 
 // let activeTab="adventurer";
 let activePeopleTab = "adventurer";
@@ -16,7 +16,7 @@ let activeWorldTab = "town";
    META / RUN
 ===================================================== */
 
-function createMeta() {
+function createMeta(): MetaState {
   return {
     gem: CONFIG.startGem,
 
@@ -26,7 +26,7 @@ function createMeta() {
   };
 }
 
-function createRun(meta) {
+function createRun(meta: MetaState): GameState {
   return {
     meta,
 
@@ -43,10 +43,15 @@ function createRun(meta) {
 
     adventurers: [],
 
-    line1: [null, null, null],
+    line1: {
+      rear: [null, null],
+      front: [null, null],
+    },
 
-    line2: [null, null, null],
-
+    line2: {
+      rear: [null, null],
+      front: [null, null],
+    },
     questBoard: [],
 
     activeQuests: [],
@@ -81,8 +86,8 @@ function generateUniqueName() {
    ADVENTURER CREATION
 ===================================================== */
 
-function createAdventurer(level = 1) {
-  const jobKeys = Object.keys(JOBS);
+function createAdventurer(level = 1): Adventurer {
+  const jobKeys = Object.keys(JOBS) as JobId[];
 
   const jobKey = jobKeys[randomInt(0, jobKeys.length - 1)];
 
@@ -156,7 +161,7 @@ function load() {
 
   if (saved) {
     try {
-      state = JSON.parse(saved);
+      state = migrateRunState(JSON.parse(saved));
 
       refreshQuestBoard();
 
@@ -173,6 +178,43 @@ function load() {
   refreshQuestBoard();
 
   save();
+}
+
+function normalizeLineState(rawLine: unknown, legacyRear: unknown, legacyFront: unknown): LineState {
+  if (rawLine && !Array.isArray(rawLine) && typeof rawLine === "object") {
+    const candidate = rawLine as Partial<LineState>;
+    return {
+      rear: Array.isArray(candidate.rear) ? candidate.rear.slice(0, 2) : [null, null],
+      front: Array.isArray(candidate.front) ? candidate.front.slice(0, 2) : [null, null],
+    };
+  }
+
+  if (Array.isArray(legacyRear) || Array.isArray(legacyFront)) {
+    return {
+      rear: Array.isArray(legacyRear) ? legacyRear.slice(0, 2) : [null, null],
+      front: Array.isArray(legacyFront) ? legacyFront.slice(0, 2) : [null, null],
+    };
+  }
+
+  const oldSlots = Array.isArray(rawLine) ? rawLine : [];
+  return {
+    rear: [oldSlots[0] ?? null, null],
+    front: [oldSlots[1] ?? null, oldSlots[2] ?? null],
+  };
+}
+
+function migrateRunState(raw: Record<string, any>): GameState {
+  const migrated = raw as GameState & Record<string, any>;
+  migrated.line1 = normalizeLineState(raw.line1, raw.line1Rear, raw.line1Front);
+  migrated.line2 = normalizeLineState(raw.line2, raw.line2Rear, raw.line2Front);
+
+  delete migrated.line1Rear;
+  delete migrated.line1Front;
+  delete migrated.line2Rear;
+  delete migrated.line2Front;
+  delete migrated.line3;
+
+  return migrated;
 }
 
 function resetSave() {

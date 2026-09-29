@@ -14,7 +14,7 @@ function randomInt(min, max) {
   return Math.floor(randomRange(min, max + 1));
 }
 
-function getAdv(id) {
+function getAdv(id: AdventurerId | null): Adventurer | undefined {
   return state.adventurers.find((a) => a.id === id);
 }
 
@@ -23,6 +23,56 @@ function log(text) {
 
   if (state.logs.length > 100) state.logs.shift();
 }
+
+function getLineState(lineId: LineId): LineState {
+  return state[lineId];
+}
+
+function getLineAdvIds(lineId: LineId): AdventurerId[] {
+  const line = getLineState(lineId);
+  return [...line.rear, ...line.front].filter((id): id is AdventurerId => id !== null);
+}
+
+function getAdvPos(advId: AdventurerId): LinePlacement | null {
+  for (const lineData of Object.values(LINES)) {
+    const line = getLineState(lineData.id);
+
+    if (line.front.includes(advId)) {
+      return {
+        lineId: lineData.id,
+        position: "front",
+      };
+    }
+
+    if (line.rear.includes(advId)) {
+      return {
+        lineId: lineData.id,
+        position: "rear",
+      };
+    }
+  }
+
+  return null;
+}
+
+function getPositionBonus(adv: Adventurer, stat: PositionStat): number {
+  const placement = getAdvPos(adv.id);
+
+  /* 
+   * 전선에 없는 모헙가는
+   * 포지션 보너스 없음
+   */
+
+  if (!placement) return 1;
+
+  const job = JOBS[adv.job];
+
+  return (
+    job.positionBonus?.[placement.position]?.[stat] ?? 1
+  );
+}
+
+
 
 /* =====================================================
    CAPACITY
@@ -89,7 +139,7 @@ function gainExp(adv, amount) {
 
     result.expGain += amount;
 
-    if (adv.Level > beforeLevel) {
+    if (adv.level > beforeLevel) {
       result.levelUp = true;
 
       result.events.push({
@@ -151,13 +201,41 @@ function hire() {
 function activeSlots(line) {
   const town = townData();
 
+  switch (line) {
+    case "line1Front":
+      // console.log(line, line === "line1Front");
+      return town.line1Front;
+    case "line1Rear":
+      // console.log(line, line === "line1Rear");
+      return town.line1Rear;
+    case "line2Front":
+      // console.log(line, line === "line2Front");
+      return town.line2Front;
+    case "line2Rear":
+      // console.log(line, line === "line2Rear");
+      return town.line2Rear;
+  }
+
   return line === "line1" ? town.line1 : town.line2;
 }
 
-function assignSlot(line, index) {
-  if (index >= activeSlots(line)) return;
+function parsePositionSlotKey(slotKey: string): LinePlacement | null {
+  const match = /^(line[12])(Rear|Front)$/.exec(slotKey);
+  if (!match) return null;
 
-  const slots = state[line];
+  return {
+    lineId: match[1] as LineId,
+    position: match[2].toLowerCase() as Position,
+  };
+}
+
+function assignSlot(line, index) {
+  // if (index >= activeSlots(line)) return;
+  if (!activeSlots(line)) return;
+
+  const placement = parsePositionSlotKey(line);
+  if (!placement) return;
+  const slots = getLineState(placement.lineId)[placement.position];
 
   if (slots[index]) {
     const adv = getAdv(slots[index]);
@@ -198,12 +276,14 @@ function assignSlot(line, index) {
    SYNERGY
 ===================================================== */
 
-function lineSynergy(slots) {
-  const adventurers = slots.map(getAdv).filter(Boolean);
+function lineSynergy(slots: readonly Slot[]): SynergyResult {
+  const adventurers = slots
+    .map(getAdv)
+    .filter((adv): adv is Adventurer => adv !== undefined);
 
   const jobs = adventurers.map((a) => a.job);
 
-  const result = {
+  const result: SynergyResult = {
     allAttack: 1,
     allDefense: 1,
 
@@ -288,6 +368,8 @@ function effectiveAttack(adv, synergy) {
     multiplier *= synergy.mageAttack;
   }
 
+  multiplier *= getPositionBonus(adv, "attack");
+
   return adv.attack * multiplier;
 }
 
@@ -302,6 +384,8 @@ function effectiveDefense(adv, synergy) {
     multiplier *= synergy.mageDefense;
   }
 
+  multiplier *= getPositionBonus(adv, "defense");
+
   return adv.defense * multiplier;
 }
 
@@ -309,8 +393,15 @@ function effectiveDefense(adv, synergy) {
    POWER
 ===================================================== */
 
-function advCombatPower(adv) {
-  return adv.attack + adv.defense * 0.6 + adv.hp * 0.08;
+function advCombatPower(adv: Adventurer, synergy?: SynergyResult): number {
+  const placement = getAdvPos(adv.id);
+  const effectiveSynergy = synergy ?? (placement
+    ? lineSynergy(getLineAdvIds(placement.lineId))
+    : lineSynergy([]));
+  const attack = effectiveAttack(adv, effectiveSynergy);
+  const defense = effectiveDefense(adv, effectiveSynergy);
+
+  return attack + defense * 0.6 + adv.hp * 0.08;
 }
 
 function linePower(slots) {
@@ -332,7 +423,7 @@ function linePower(slots) {
 }
 
 function totalDefensePower() {
-  return linePower(state.line1) + linePower(state.line2);
+  return linePower(getLineAdvIds("line1")) + linePower(getLineAdvIds("line2"));
 }
 
 function enemyPower() {
@@ -415,9 +506,9 @@ function refreshQuestBoard() {
 function addWaveQuests() {
   const town = townData();
 
-  const freeSlots = town.questBoardSlots - state.questBoard.length;
+  const freeSlots = town.questSlots - state.questBoard.length;
 
-  const spawnCount = Math.min(town.questSpawnPerWave, freeSlots);
+  const spawnCount = Math.min(1, freeSlots);
 
   for (let i = 0; i < spawnCount; i++) {
     state.questBoard.push(createQuest());
@@ -459,6 +550,8 @@ function sendQuest(questId) {
 
   const adv = getAdv(selectedId);
 
+  if (!adv || adv.status !== "waiting") return;
+
   const hpRate = adv.hp / adv.maxHp;
 
   if (hpRate <= CONFIG.questMinHpRate) {
@@ -466,8 +559,6 @@ function sendQuest(questId) {
 
     return;
   }
-
-  if (!adv || adv.status !== "waiting") return;
 
   const quest = state.questBoard.find((q) => q.id === questId);
 
@@ -654,10 +745,10 @@ function resolveLine(slotIds, incoming, label) {
 function resolveDefense() {
   let remaining = enemyPower();
 
-  remaining = resolveLine(state.line2, remaining, "외곽 방어선");
+  remaining = resolveLine(getLineAdvIds("line2"), remaining, "외곽 방어선");
 
   if (remaining > 0) {
-    remaining = resolveLine(state.line1, remaining, "최종 방어선");
+    remaining = resolveLine(getLineAdvIds("line1"), remaining, "최종 방어선");
   }
 
   if (remaining > 0) {
@@ -683,9 +774,11 @@ function resolveDefense() {
 ===================================================== */
 
 function removeFromDefense(id) {
-  state.line1 = state.line1.map((x) => (x === id ? null : x));
-
-  state.line2 = state.line2.map((x) => (x === id ? null : x));
+  for (const lineId of Object.keys(LINES) as LineId[]) {
+    const line = getLineState(lineId);
+    line.front = line.front.map((slotId) => (slotId === id ? null : slotId));
+    line.rear = line.rear.map((slotId) => (slotId === id ? null : slotId));
+  }
 }
 
 function handleKnockout(adv) {
@@ -882,10 +975,10 @@ function recoverAdventurers() {
     // 여기서부터 모험가의 상태에 따라서 회복량이 달라진다.
 
     let healRate = 0.0;
-    let recoveryType = null;
+    let recoveryType: "frontline" | "waiting" | null = null;
 
     if (isDefending(adv.id)) {
-      healRate = CONFIG.frontlineHealRate + getLinePriestHealRate(adv.id);
+      healRate = CONFIG.frontlineHealRate * getPositionBonus(adv, "heal") + getLinePriestHealRate(adv.id);
       recoveryType = "frontline";
     } else if (adv.status === "waiting") {
       healRate = CONFIG.waitingHealRate;
@@ -947,20 +1040,14 @@ function recoverDefenseAdventurers() {
   }
 }
 
-function getLinePriestHealRate(advIds) {
-  const line1 = state.line1 ?? [];
-  const line2 = state.line2 ?? [];
+function getLinePriestHealRate(advId) {
+  const placement = getAdvPos(advId);
+  if (!placement) return 0;
 
-  let targetLine = null;
-
-  if(line1.includes(advIds)) targetLine = line1;
-  else if(line2.includes(advIds)) targetLine = line2;
-  else return 0;
-
-  for (const id of targetLine) {
+  for (const id of getLineAdvIds(placement.lineId)) {
     const adv = getAdv(id);
-    
-    if(!adv) continue;
+
+    if (!adv) continue;
 
     if (adv.job !== "priest") continue;
 
@@ -969,12 +1056,9 @@ function getLinePriestHealRate(advIds) {
 
   return 0;
 }
-function isDefending(advIds) {
-  const line1 = state.line1 ?? [];
-  const line2 = state.line2 ?? [];
-  const line3 = state.line3 ?? []; // 아직 line3은 존재하지 않음.
 
-  return (line1.includes(advIds) || line2.includes(advIds));
+function isDefending(advIds) {
+  return getAdvPos(advIds) !== null;
 }
 
 /* =====================================================
@@ -1077,8 +1161,8 @@ function beginWaveResult() {
     goldBefore: state.gold,
     goldAfter: state.gold,
 
-    gemBefore: state.gem ?? 0,
-    gemAfter: state.gem ?? 0,
+    gemBefore: state.meta.gem,
+    gemAfter: state.meta.gem,
 
     lines: {
       outer: {
@@ -1190,9 +1274,9 @@ function finishWaveResult() {
 
   if (!currentWaveResult) return;
 
-  currentWaveResult.townHpAter = state.townHp;
+  currentWaveResult.townHpAfter = state.townHp;
   currentWaveResult.goldAfter = state.gold;
-  currentWaveResult.gemAfter = state.gem ?? 0;
+  currentWaveResult.gemAfter = state.meta.gem;
 
   for (const result of Object.values(currentWaveResult.adventurers)) {
 

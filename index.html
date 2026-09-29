@@ -14,31 +14,31 @@
       <div class="header-column">
         <div class="header-row header-status">
           <div class="resource">WAVE<strong id="wave"></strong></div>
-          
+
           <div class="resource">💰 GOLD<strong id="gold"></strong></div>
-          
+
           <div class="resource">💎 GEM<strong id="gem"></strong></div>
-          
+
           <div class="resource">🏙️ 도시<strong id="townLevel"></strong></div>
-          
+
           <div class="resource">🏰 HP<strong id="townHp"></strong></div>
         </div>
-        
+
         <div class="header-row header-battle">
-          
+
           <div class="resource">⚔️우리 전투력<strong id="headerDefensePower"></strong></div>
-          
+
           <div id="headerRisk" class="battle-rist safe">안정적</div>
-          
+
           <div class="resource">👿 마왕군 전투력<strong id="headerEnemyPower"></strong></div>
-          
+
         </div>
       </div>
-      
+
       <div class="header-column">
         <button class="next-wave-button" onclick="nextWave()">►</button>
       </div>
-      
+
     </header>
 
     <!-- =========================
@@ -76,27 +76,54 @@
 
       <div class="battlefield">
         <div class="zone">
-          <div class="zone-title">🚪 마왕군 진입</div>
+          <div class="zone-title non-slot">
+            <div class="zone-title-label">마왕군 진입</div>
+            <div class="zone-title-icon">🚪</div>
+          </div>
         </div>
 
         <div class="zone" id="line2Zone">
           <div class="zone-title">외곽 방어선 · 배치 2</div>
 
-          <div class="slots" id="line2"></div>
+          <div class="formation">
+            <div class="formation-position rear">
+              <div class="position-title">후열</div>
+              <div class="position-slot" id="line2Rear"></div>
+            </div>
+            <div class="formation-position front">
+              <div class="position-title">전열</div>
+              <div class="position-slot" id="line2Front"></div>
+            </div>
+          </div>
+          <div class="position-slots" id="line2"></div>
 
           <div id="line2Synergy" class="synergy hidden"></div>
         </div>
 
-        <div class="zone">
+        <div class="zone" id="line1Zone">
           <div class="zone-title">최종 방어선 · 배치 1</div>
 
-          <div class="slots" id="line1"></div>
+          <div class="formation">
+            <div class="formation-position rear">
+              <div class="position-title">후열</div>
+              <div class="position-slot" id="line1Rear"></div>
+            </div>
+            <div class="formation-position front">
+              <div class="position-title">전열</div>
+              <div class="position-slot" id="line1Front"></div>
+            </div>
+          </div>
+          <div class="slots" id="line1">
+          </div>
 
           <div id="line1Synergy" class="synergy hidden"></div>
         </div>
 
         <div class="zone">
-          <div style="text-align: center">🏰 도시 중심</div>
+          <div class="zone-title non-slot">
+            <div class="zone-title-icon">🏰</div>
+            <div class="zone-title-label"> 도시 중심</div>
+          </div>
         </div>
       </div>
     </section>
@@ -268,12 +295,12 @@
     </div>
   </div>
 
-  <script src="./js/config.js"></script>
-  <script src="./js/data.js"></script>
-  <script src="./js/state.js"></script>
-  <script src="./js/game.js"></script>
-  <script src="./js/ui.js"></script>
-  <script src="./js/main.js"></script>
+  <script src="./dist/js/config.js"></script>
+  <script src="./dist/js/data.js"></script>
+  <script src="./dist/js/state.js"></script>
+  <script src="./dist/js/game.js"></script>
+  <script src="./dist/js/ui.js"></script>
+  <script src="./dist/js/main.js"></script>
 </body>
 
 </html>

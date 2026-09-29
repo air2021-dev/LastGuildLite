@@ -125,9 +125,16 @@ function render() {
 
   renderTown();
 
-  renderDefense("line1");
+  for (const line of Object.values(LINES)) {
+    renderDefensePosition(line);
+    // renderDefense(line);
+    // for(const position of Object.values(LINES[key].positions)){
+    //   renderDefense(LINES[key].id + "-" + position);
+    // }
+  }
+  // renderDefense("line1");
 
-  renderDefense("line2");
+  // renderDefense("line2");
 
   renderWaiting();
 
@@ -246,16 +253,100 @@ function renderTown() {
    DEFENSE UI
 ===================================================== */
 
+function renderDefensePosition(line) {
+  for (const pos of LINE_POSITIONS) {
+    const positionName = pos.charAt(0).toUpperCase() + pos.slice(1);
+    const linePos = line.id + positionName;
+    const root = document.getElementById(linePos);
+    // console.log(linePos, root);
+    if (!root) continue;
+
+    root.innerHTML = "";
+
+    const slots = getLineState(line.id)[pos];
+
+    const active = activeSlots(linePos);
+    // console.log(linePos, active);
+    for (let i = 0; i < 2; i++) {
+      const div = document.createElement("div");
+
+      div.className = "slot";
+
+      if (!active) {
+        div.classList.add("locked");
+        div.textContent = "🔒";
+      } else if (slots[i]) {
+        const adv = getAdv(slots[i]);
+
+        if (!adv) continue;
+
+        const hpPercent = Math.max(0, Math.min(100, Math.round((adv.hp / adv.maxHp) * 100)),);
+        const expNeed = requiredExp(adv.level);
+        const expPercent = Math.max(0, Math.min(100, Math.round((adv.exp / expNeed) * 100)),);
+
+        if (adv) {
+          div.classList.add("occupied");
+          div.innerHTML = `
+                <div>
+                <strong>${adv.name}</strong>
+                <br>
+                ${JOBS[adv.job].name}
+                Lv.${adv.level}
+                <br>
+                HP ${Math.max(0, adv.hp)} / ${adv.maxHp} (${hpPercent}%)
+                <br>
+                    EXP ${expPercent}% 
+                    <div class="exp-bar">
+                        <div class="exp-fill" style="width:${expPercent}%"></div>
+                    </div>
+                </div>
+                `;
+        }
+
+
+        if (hpPercent <= 30) {
+          div.classList.add("low-hp");
+        }
+      } else {
+        if (selectedId) {
+          div.classList.add("possible");
+
+          div.textContent = "배치";
+        } else {
+          div.textContent = "빈 슬롯";
+        }
+      }
+
+      if (active) {
+        div.onclick = () => assignSlot(linePos, i);
+      }
+
+      root.appendChild(div);
+    }
+  }
+
+  const slots = getLineAdvIds(line.id);
+  const synergy = lineSynergy(slots);
+  const synergyEl = document.getElementById(line.id + "Synergy");
+
+  if (!synergyEl) return;
+  synergyEl.classList.toggle("hidden", synergy.effects.length === 0);
+  synergyEl.innerHTML = synergy.effects.map((effect) => `✨ ${effect}`).join("<br>");
+}
+
 function renderDefense(line) {
+
   const root = document.getElementById(line);
 
+  if (!root) return;
   root.innerHTML = "";
-
-  const slots = state[line];
+  console.log(state);
+  const slots = state[line] ?? [];
+  console.log(slots);
 
   const active = activeSlots(line);
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
     const div = document.createElement("div");
 
     div.className = "slot";
@@ -274,7 +365,7 @@ function renderDefense(line) {
 
       const expNeed = requiredExp(adv.level);
 
-      const exePercent = Math.max(
+      const expPercent = Math.max(
         0,
         Math.min(100, Math.round((adv.exp / expNeed) * 100)),
       );
@@ -291,9 +382,9 @@ function renderDefense(line) {
                 <br>
                 HP ${Math.max(0, adv.hp)} / ${adv.maxHp} (${hpPercent}%)
                 <br>
-                    EXP ${exePercent}% 
+                    EXP ${expPercent}% 
                     <div class="exp-bar">
-                        <div class="exp-fill" style="width:${exePercent}%"></div>
+                        <div class="exp-fill" style="width:${expPercent}%"></div>
                     </div>
                 </div>
                 `;
@@ -687,7 +778,7 @@ function showWaveResult(result) {
      */
 
     if (
-      adv.heald === 0 &&
+      adv.healed === 0 &&
       adv.damage === 0 &&
       adv.expGain === 0 &&
       !adv.retreated &&
