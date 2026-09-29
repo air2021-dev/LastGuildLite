@@ -4,10 +4,9 @@
     "module": "none",
     "rootDir": "./src",
     "outDir": "./dist/js",
-    "allowJs": true,
-    "checkJs": false,
+    "allowJs": false,
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noEmitOnError": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true

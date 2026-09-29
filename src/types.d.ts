@@ -27,6 +27,33 @@ interface LineState {
   rear: Slot[];
 }
 
+interface TownLevelData {
+  defenseSlots: Record<LineId, Record<Position, number>>;
+  maxDeploy: number;
+  questSlots: number;
+  maxQuestRank: number;
+}
+
+interface QuestTemplate {
+  rank: number;
+  name: string;
+  duration: number;
+  expiry: number;
+  power: number;
+  reward: number;
+}
+
+interface Quest extends QuestTemplate {
+  id: string;
+  remainingExpiry: number;
+}
+
+interface ActiveQuest {
+  quest: Quest;
+  adventurerId: AdventurerId;
+  remaining: number;
+}
+
 interface Adventurer {
   id: AdventurerId;
   name: string;
@@ -61,8 +88,8 @@ interface GameState {
   adventurers: Adventurer[];
   line1: LineState;
   line2: LineState;
-  questBoard: any[];
-  activeQuests: any[];
+  questBoard: Quest[];
+  activeQuests: ActiveQuest[];
   graveyard: AdventurerId[];
   logs: string[];
   gameOver: boolean;
@@ -102,8 +129,13 @@ interface WaveAdventurerResult {
   retreated: boolean;
   died: boolean;
   levelUp: boolean;
-  events: any[];
+  events: WaveEvent[];
 }
+
+type WaveEvent =
+  | { type: "levelUp"; from: number; to: number }
+  | { type: "damage" | "heal"; amount: number; source?: "frontline" | "waiting" }
+  | { type: "retreat" | "death" };
 
 interface WaveResult {
   wave: number;
@@ -118,5 +150,32 @@ interface WaveResult {
   adventurers: Record<AdventurerId, WaveAdventurerResult>;
 }
 
-declare const CONFIG: Record<string, any>;
+interface GameConfig {
+  startGold: number;
+  startGem: number;
+  townHp: number;
+  baseWaiting: number;
+  baseGrave: number;
+  baseInheritance: number;
+  hireBaseCost: number;
+  reviveGold: number;
+  reviveGem: number;
+  reviveWaves: number;
+  waitingExpandGold: number;
+  graveExpandGold: number;
+  waitingHealRate: number;
+  frontlineHealRate: number;
+  questMinHpRate: number;
+  retreatChance: number;
+  townUpgradeCosts: number[];
+  enemyBase: number;
+  enemyGrowth: number;
+}
+
+interface LineDefinition {
+  id: LineId;
+  label: string;
+  positions: readonly Position[];
+}
+
 declare function render(): void;

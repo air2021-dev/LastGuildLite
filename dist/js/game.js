@@ -14,6 +14,9 @@ function randomInt(min, max) {
 function getAdv(id) {
     return state.adventurers.find((a) => a.id === id);
 }
+function isAdventurer(adv) {
+    return adv !== undefined;
+}
 function log(text) {
     state.logs.push(`W${state.wave} · ${text}`);
     if (state.logs.length > 100)
@@ -137,41 +140,23 @@ function hire() {
 /* =====================================================
    DEFENSE SLOTS
 ===================================================== */
-function activeSlots(line) {
-    const town = townData();
-    switch (line) {
-        case "line1Front":
-            // console.log(line, line === "line1Front");
-            return town.line1Front;
-        case "line1Rear":
-            // console.log(line, line === "line1Rear");
-            return town.line1Rear;
-        case "line2Front":
-            // console.log(line, line === "line2Front");
-            return town.line2Front;
-        case "line2Rear":
-            // console.log(line, line === "line2Rear");
-            return town.line2Rear;
-    }
-    return line === "line1" ? town.line1 : town.line2;
+function positionCapacity(lineId, position) {
+    return townData().defenseSlots[lineId][position];
 }
-function parsePositionSlotKey(slotKey) {
-    const match = /^(line[12])(Rear|Front)$/.exec(slotKey);
-    if (!match)
-        return null;
-    return {
-        lineId: match[1],
-        position: match[2].toLowerCase(),
-    };
+function totalDefenseSlots(town = townData()) {
+    return Object.keys(LINES).reduce((total, lineId) => {
+        const line = town.defenseSlots[lineId];
+        return total + line.front + line.rear;
+    }, 0);
 }
-function assignSlot(line, index) {
-    // if (index >= activeSlots(line)) return;
-    if (!activeSlots(line))
+function deployedCount() {
+    return Object.keys(LINES)
+        .reduce((total, lineId) => total + getLineAdvIds(lineId).length, 0);
+}
+function assignSlot(lineId, position, index) {
+    if (index < 0 || index >= positionCapacity(lineId, position))
         return;
-    const placement = parsePositionSlotKey(line);
-    if (!placement)
-        return;
-    const slots = getLineState(placement.lineId)[placement.position];
+    const slots = getLineState(lineId)[position];
     if (slots[index]) {
         const adv = getAdv(slots[index]);
         if (adv) {
@@ -185,12 +170,17 @@ function assignSlot(line, index) {
     }
     if (!selectedId)
         return;
+    if (deployedCount() >= townData().maxDeploy) {
+        alert(`현재 도시에서는 최대 ${townData().maxDeploy}명까지 방어에 배치할 수 있습니다.`);
+        return;
+    }
     const adv = getAdv(selectedId);
     if (!adv || adv.status !== "waiting")
         return;
     adv.status = "defense";
     slots[index] = adv.id;
-    log(`${adv.name}을 방어선에 배치했습니다.`);
+    const positionLabel = position === "front" ? "전열" : "후열";
+    log(`${adv.name}을 ${LINES[lineId].label} ${positionLabel}에 배치했습니다.`);
     selectedId = null;
     save();
     render();
@@ -298,7 +288,7 @@ function advCombatPower(adv, synergy) {
     return attack + defense * 0.6 + adv.hp * 0.08;
 }
 function linePower(slots) {
-    const adventurers = slots.map(getAdv).filter(Boolean);
+    const adventurers = slots.map(getAdv).filter(isAdventurer);
     const synergy = lineSynergy(slots);
     let power = 0;
     for (const adv of adventurers) {
@@ -486,7 +476,7 @@ function calculateDamage(enemy, defenders, slotIds) {
     return Math.max(1, enemy - defense);
 }
 function resolveLine(slotIds, incoming, label) {
-    const defenders = slotIds.map(getAdv).filter(Boolean);
+    const defenders = slotIds.map(getAdv).filter(isAdventurer);
     if (defenders.length === 0)
         return incoming;
     const synergy = lineSynergy(slotIds);
@@ -763,8 +753,8 @@ function getLinePriestHealRate(advId) {
     }
     return 0;
 }
-function isDefending(advIds) {
-    return getAdvPos(advIds) !== null;
+function isDefending(advId) {
+    return getAdvPos(advId) !== null;
 }
 /* =====================================================
    TOWN
@@ -885,7 +875,8 @@ function nextWave() {
     }
     save();
     render();
-    showWaveResult(currentWaveResult);
+    if (currentWaveResult)
+        showWaveResult(currentWaveResult);
 }
 function waveAdvResult(adv) {
     if (!currentWaveResult)
@@ -965,9 +956,9 @@ function startNewRun() {
         return;
     const inherited = state.inheritanceSelection
         .map(getAdv)
-        .filter(Boolean)
+        .filter(isAdventurer)
         .map((adv) => {
-        const copy = JSON.parse(JSON.stringify(adv));
+        const copy = structuredClone(adv);
         copy.level = Math.max(1, Math.ceil(copy.level * 0.6));
         copy.status = "waiting";
         copy.exp = 0;

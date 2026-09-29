@@ -4,57 +4,47 @@
 ===================================================== */
 const TOWN_LEVELS = {
     1: {
-        line1: 2,
-        line2: 0,
-        line1Rear: true,
-        line1Front: true,
-        line2Rear: false,
-        line2Front: false,
-        maxDeply: 1,
+        defenseSlots: {
+            line1: { rear: 1, front: 1 },
+            line2: { rear: 0, front: 0 },
+        },
+        maxDeploy: 1,
         questSlots: 1,
         maxQuestRank: 1,
     },
     2: {
-        line1: 4,
-        line2: 0,
-        line1Rear: true,
-        line1Front: true,
-        line2Rear: false,
-        line2Front: false,
-        maxDeply: 2,
+        defenseSlots: {
+            line1: { rear: 2, front: 2 },
+            line2: { rear: 0, front: 0 },
+        },
+        maxDeploy: 2,
         questSlots: 2,
         maxQuestRank: 1,
     },
     3: {
-        line1: 4,
-        line2: 2,
-        line1Rear: true,
-        line1Front: true,
-        line2Rear: true,
-        line2Front: true,
-        maxDeply: 4,
+        defenseSlots: {
+            line1: { rear: 2, front: 2 },
+            line2: { rear: 1, front: 1 },
+        },
+        maxDeploy: 4,
         questSlots: 2,
         maxQuestRank: 2,
     },
     4: {
-        line1: 4,
-        line2: 4,
-        line1Rear: true,
-        line1Front: true,
-        line2Rear: true,
-        line2Front: true,
-        maxDeply: 5,
+        defenseSlots: {
+            line1: { rear: 2, front: 2 },
+            line2: { rear: 2, front: 2 },
+        },
+        maxDeploy: 5,
         questSlots: 3,
         maxQuestRank: 2,
     },
     5: {
-        line1: 4,
-        line2: 4,
-        line1Rear: true,
-        line1Front: true,
-        line2Rear: true,
-        line2Front: true,
-        maxDeply: 6,
+        defenseSlots: {
+            line1: { rear: 2, front: 2 },
+            line2: { rear: 2, front: 2 },
+        },
+        maxDeploy: 6,
         questSlots: 3,
         maxQuestRank: 3,
     },
@@ -185,10 +175,12 @@ const NAMES = [
 const LINES = {
     line1: {
         id: "line1",
+        label: "최종 방어선",
         positions: ["rear", "front"],
     },
     line2: {
         id: "line2",
+        label: "외곽 방어선",
         positions: ["rear", "front"],
     }
 };

@@ -2,7 +2,7 @@
    CONFIG
 ===================================================== */
 
-const CONFIG = {
+const CONFIG: GameConfig = {
   startGold: 500,
   startGem: 20,
 

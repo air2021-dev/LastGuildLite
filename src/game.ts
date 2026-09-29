@@ -6,11 +6,11 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-function randomRange(min, max) {
+function randomRange(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
-function randomInt(min, max) {
+function randomInt(min: number, max: number): number {
   return Math.floor(randomRange(min, max + 1));
 }
 
@@ -18,7 +18,11 @@ function getAdv(id: AdventurerId | null): Adventurer | undefined {
   return state.adventurers.find((a) => a.id === id);
 }
 
-function log(text) {
+function isAdventurer(adv: Adventurer | undefined): adv is Adventurer {
+  return adv !== undefined;
+}
+
+function log(text: string): void {
   state.logs.push(`W${state.wave} · ${text}`);
 
   if (state.logs.length > 100) state.logs.shift();
@@ -90,7 +94,7 @@ function inheritanceCapacity() {
   return CONFIG.baseInheritance + state.meta.permanentInheritance;
 }
 
-function townData() {
+function townData(): TownLevelData {
   return TOWN_LEVELS[state.townLevel];
 }
 
@@ -98,7 +102,7 @@ function townData() {
    EXP
 ===================================================== */
 
-function requiredExp(level) {
+function requiredExp(level: number): number {
   /*
 초반 빠른 성장
 */
@@ -106,7 +110,7 @@ function requiredExp(level) {
   return 25 + level * 20 + level * level * 4;
 }
 
-function gainExp(adv, amount) {
+function gainExp(adv: Adventurer, amount: number): void {
   const beforeLevel = adv.level;
 
   adv.exp += amount;
@@ -198,44 +202,26 @@ function hire() {
    DEFENSE SLOTS
 ===================================================== */
 
-function activeSlots(line) {
-  const town = townData();
-
-  switch (line) {
-    case "line1Front":
-      // console.log(line, line === "line1Front");
-      return town.line1Front;
-    case "line1Rear":
-      // console.log(line, line === "line1Rear");
-      return town.line1Rear;
-    case "line2Front":
-      // console.log(line, line === "line2Front");
-      return town.line2Front;
-    case "line2Rear":
-      // console.log(line, line === "line2Rear");
-      return town.line2Rear;
-  }
-
-  return line === "line1" ? town.line1 : town.line2;
+function positionCapacity(lineId: LineId, position: Position): number {
+  return townData().defenseSlots[lineId][position];
 }
 
-function parsePositionSlotKey(slotKey: string): LinePlacement | null {
-  const match = /^(line[12])(Rear|Front)$/.exec(slotKey);
-  if (!match) return null;
-
-  return {
-    lineId: match[1] as LineId,
-    position: match[2].toLowerCase() as Position,
-  };
+function totalDefenseSlots(town: TownLevelData = townData()): number {
+  return (Object.keys(LINES) as LineId[]).reduce((total, lineId) => {
+    const line = town.defenseSlots[lineId];
+    return total + line.front + line.rear;
+  }, 0);
 }
 
-function assignSlot(line, index) {
-  // if (index >= activeSlots(line)) return;
-  if (!activeSlots(line)) return;
+function deployedCount(): number {
+  return (Object.keys(LINES) as LineId[])
+    .reduce((total, lineId) => total + getLineAdvIds(lineId).length, 0);
+}
 
-  const placement = parsePositionSlotKey(line);
-  if (!placement) return;
-  const slots = getLineState(placement.lineId)[placement.position];
+function assignSlot(lineId: LineId, position: Position, index: number): void {
+  if (index < 0 || index >= positionCapacity(lineId, position)) return;
+
+  const slots = getLineState(lineId)[position];
 
   if (slots[index]) {
     const adv = getAdv(slots[index]);
@@ -256,6 +242,11 @@ function assignSlot(line, index) {
 
   if (!selectedId) return;
 
+  if (deployedCount() >= townData().maxDeploy) {
+    alert(`현재 도시에서는 최대 ${townData().maxDeploy}명까지 방어에 배치할 수 있습니다.`);
+    return;
+  }
+
   const adv = getAdv(selectedId);
 
   if (!adv || adv.status !== "waiting") return;
@@ -264,7 +255,8 @@ function assignSlot(line, index) {
 
   slots[index] = adv.id;
 
-  log(`${adv.name}을 방어선에 배치했습니다.`);
+  const positionLabel = position === "front" ? "전열" : "후열";
+  log(`${adv.name}을 ${LINES[lineId].label} ${positionLabel}에 배치했습니다.`);
 
   selectedId = null;
 
@@ -357,7 +349,7 @@ function lineSynergy(slots: readonly Slot[]): SynergyResult {
   return result;
 }
 
-function effectiveAttack(adv, synergy) {
+function effectiveAttack(adv: Adventurer, synergy: SynergyResult): number {
   let multiplier = synergy.allAttack;
 
   if (adv.job === "warrior") {
@@ -373,7 +365,7 @@ function effectiveAttack(adv, synergy) {
   return adv.attack * multiplier;
 }
 
-function effectiveDefense(adv, synergy) {
+function effectiveDefense(adv: Adventurer, synergy: SynergyResult): number {
   let multiplier = synergy.allDefense;
 
   if (adv.job === "warrior") {
@@ -404,8 +396,8 @@ function advCombatPower(adv: Adventurer, synergy?: SynergyResult): number {
   return attack + defense * 0.6 + adv.hp * 0.08;
 }
 
-function linePower(slots) {
-  const adventurers = slots.map(getAdv).filter(Boolean);
+function linePower(slots: readonly Slot[]): number {
+  const adventurers = slots.map(getAdv).filter(isAdventurer);
 
   const synergy = lineSynergy(slots);
 
@@ -519,7 +511,7 @@ function addWaveQuests() {
    QUEST SUCCESS
 ===================================================== */
 
-function questChance(adv, quest) {
+function questChance(adv: Adventurer, quest: Quest): number {
   const power = advCombatPower(adv);
 
   const ratio = power / quest.power;
@@ -527,7 +519,7 @@ function questChance(adv, quest) {
   return Math.max(0.2, Math.min(0.95, 0.35 + ratio * 0.45));
 }
 
-function riskText(adv, quest) {
+function riskText(adv: Adventurer, quest: Quest): string {
   const chance = questChance(adv, quest);
 
   if (chance >= 0.8) return "안전";
@@ -541,7 +533,7 @@ function riskText(adv, quest) {
    QUEST START
 ===================================================== */
 
-function sendQuest(questId) {
+function sendQuest(questId: string): void {
   if (!selectedId) {
     alert("모험가를 먼저 선택하세요.");
 
@@ -662,7 +654,7 @@ function progressActiveQuests() {
    BATTLE
 ===================================================== */
 
-function calculateDamage(enemy, defenders, slotIds) {
+function calculateDamage(enemy: number, defenders: Adventurer[], slotIds: readonly Slot[]): number {
   if (defenders.length === 0) return enemy;
 
   const synergy = lineSynergy(slotIds);
@@ -674,8 +666,8 @@ function calculateDamage(enemy, defenders, slotIds) {
   return Math.max(1, enemy - defense);
 }
 
-function resolveLine(slotIds, incoming, label) {
-  const defenders = slotIds.map(getAdv).filter(Boolean);
+function resolveLine(slotIds: readonly Slot[], incoming: number, label: string): number {
+  const defenders = slotIds.map(getAdv).filter(isAdventurer);
 
   if (defenders.length === 0) return incoming;
 
@@ -773,7 +765,7 @@ function resolveDefense() {
    DEATH
 ===================================================== */
 
-function removeFromDefense(id) {
+function removeFromDefense(id: AdventurerId): void {
   for (const lineId of Object.keys(LINES) as LineId[]) {
     const line = getLineState(lineId);
     line.front = line.front.map((slotId) => (slotId === id ? null : slotId));
@@ -781,7 +773,7 @@ function removeFromDefense(id) {
   }
 }
 
-function handleKnockout(adv) {
+function handleKnockout(adv: Adventurer): void {
   /*
   우선 방어선에서 제거
   */
@@ -828,7 +820,7 @@ function handleKnockout(adv) {
   killAdventurer(adv);
 }
 
-function killAdventurer(adv) {
+function killAdventurer(adv: Adventurer): void {
   removeFromDefense(adv.id);
 
   state.activeQuests = state.activeQuests.filter(
@@ -854,7 +846,7 @@ function killAdventurer(adv) {
    REVIVE
 ===================================================== */
 
-function reviveGold(id) {
+function reviveGold(id: AdventurerId): void {
   const adv = getAdv(id);
 
   if (!adv) return;
@@ -889,19 +881,19 @@ function reviveGold(id) {
   render();
 }
 
-function reviveGoldCost(adv) {
+function reviveGoldCost(adv: Adventurer): number {
   return Math.round(100 + adv.level * adv.level * 60);
 }
 
-function reviveWaveCost(adv) {
+function reviveWaveCost(adv: Adventurer): number {
   return Math.max(1, Math.ceil(adv.level / 3));
 }
 
-function reviceGemCost(adv) {
+function reviceGemCost(adv: Adventurer): number {
   return Math.max(1, Math.ceil(adv.level / 3));
 }
 
-function reviveGem(id) {
+function reviveGem(id: AdventurerId): void {
   const adv = getAdv(id);
 
   if (!adv) return;
@@ -1040,7 +1032,7 @@ function recoverDefenseAdventurers() {
   }
 }
 
-function getLinePriestHealRate(advId) {
+function getLinePriestHealRate(advId: AdventurerId): number {
   const placement = getAdvPos(advId);
   if (!placement) return 0;
 
@@ -1057,8 +1049,8 @@ function getLinePriestHealRate(advId) {
   return 0;
 }
 
-function isDefending(advIds) {
-  return getAdvPos(advIds) !== null;
+function isDefending(advId: AdventurerId): boolean {
+  return getAdvPos(advId) !== null;
 }
 
 /* =====================================================
@@ -1234,10 +1226,10 @@ function nextWave() {
   save();
   render();
 
-  showWaveResult(currentWaveResult);
+  if (currentWaveResult) showWaveResult(currentWaveResult);
 }
 
-function waveAdvResult(adv) {
+function waveAdvResult(adv: Adventurer): WaveAdventurerResult | null {
   if (!currentWaveResult) return null;
 
   if (!currentWaveResult.adventurers[adv.id]) {
@@ -1306,7 +1298,7 @@ function survivorsForInheritance() {
   );
 }
 
-function toggleInheritance(id) {
+function toggleInheritance(id: AdventurerId): void {
   const list = state.inheritanceSelection;
 
   const index = list.indexOf(id);
@@ -1342,9 +1334,9 @@ function startNewRun() {
 
   const inherited = state.inheritanceSelection
     .map(getAdv)
-    .filter(Boolean)
+    .filter(isAdventurer)
     .map((adv) => {
-      const copy = JSON.parse(JSON.stringify(adv));
+      const copy: Adventurer = structuredClone(adv);
 
       copy.level = Math.max(1, Math.ceil(copy.level * 0.6));
 

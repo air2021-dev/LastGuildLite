@@ -2,6 +2,12 @@
 /* =====================================================
    SELECT
 ===================================================== */
+function element(id) {
+    const found = document.getElementById(id);
+    if (!found)
+        throw new Error(`필수 UI 요소를 찾을 수 없습니다: #${id}`);
+    return found;
+}
 function selectAdventurer(id) {
     const adv = getAdv(id);
     if (!adv || adv.status !== "waiting")
@@ -26,23 +32,27 @@ function dismissSelected() {
 /* =====================================================
    TABS
 ===================================================== */
+/* 이전 단일 탭 구조용 함수. people/world 탭 분리 후 사용하지 않는다.
 function openTab(tab) {
-    activeTab = tab;
-    ["adventurer", "quest", "grave"].forEach((name) => {
-        document
-            .getElementById("tab" + name.charAt(0).toUpperCase() + name.slice(1))
-            ?.classList.toggle("active", name === tab);
-        document
-            .getElementById("content" + name.charAt(0).toUpperCase() + name.slice(1))
-            ?.classList.toggle("active", name === tab);
-    });
+  activeTab = tab;
+
+  ["adventurer", "quest", "grave"].forEach((name) => {
+    document
+      .getElementById("tab" + name.charAt(0).toUpperCase() + name.slice(1))
+      ?.classList.toggle("active", name === tab);
+
+    document
+      .getElementById("content" + name.charAt(0).toUpperCase() + name.slice(1))
+      ?.classList.toggle("active", name === tab);
+  });
 }
+*/
 function openPeopleTab(tab) {
     activePeopleTab = tab;
     const tabs = ["adventurer", "grave"];
     for (const name of tabs) {
-        const tabEl = document.getElementById("tab" + name.charAt(0).toUpperCase() + name.slice(1));
-        const contentEl = document.getElementById("content" + name.charAt(0).toUpperCase() + name.slice(1));
+        const tabEl = element("tab" + name.charAt(0).toUpperCase() + name.slice(1));
+        const contentEl = element("content" + name.charAt(0).toUpperCase() + name.slice(1));
         tabEl?.classList.toggle("active", name === tab);
         contentEl?.classList.toggle("active", name === tab);
     }
@@ -51,8 +61,8 @@ function openWorldTab(tab) {
     activeWorldTab = tab;
     const tabs = ["town", "quest"];
     for (const name of tabs) {
-        const tabEl = document.getElementById("tab" + name.charAt(0).toUpperCase() + name.slice(1));
-        const contentEl = document.getElementById("content" + name.charAt(0).toUpperCase() + name.slice(1));
+        const tabEl = element("tab" + name.charAt(0).toUpperCase() + name.slice(1));
+        const contentEl = element("content" + name.charAt(0).toUpperCase() + name.slice(1));
         tabEl?.classList.toggle("active", name === tab);
         contentEl?.classList.toggle("active", name === tab);
     }
@@ -61,18 +71,18 @@ function openWorldTab(tab) {
    RENDER
 ===================================================== */
 function render() {
-    document.getElementById("wave").textContent = state.wave;
-    document.getElementById("gold").textContent = state.gold;
-    document.getElementById("gem").textContent = state.meta.gem;
-    document.getElementById("townHp").textContent = `${state.townHp}/${CONFIG.townHp}`;
-    document.getElementById("townLevel").textContent = `Lv.${state.townLevel}`;
-    document.getElementById("headerDefensePower").textContent = totalDefensePower();
-    document.getElementById("headerEnemyPower").textContent = enemyPower();
-    document.getElementById("ourPower").textContent = totalDefensePower();
-    document.getElementById("enemyPower").textContent = enemyPower();
+    element("wave").textContent = String(state.wave);
+    element("gold").textContent = String(state.gold);
+    element("gem").textContent = String(state.meta.gem);
+    element("townHp").textContent = `${state.townHp}/${CONFIG.townHp}`;
+    element("townLevel").textContent = `Lv.${state.townLevel}`;
+    element("headerDefensePower").textContent = String(totalDefensePower());
+    element("headerEnemyPower").textContent = String(enemyPower());
+    element("ourPower").textContent = String(totalDefensePower());
+    element("enemyPower").textContent = String(enemyPower());
     const predict = battlePrediction();
-    const risk = document.getElementById("headerRisk");
-    const predictionEl = document.getElementById("battlePrediction");
+    const risk = element("headerRisk");
+    const predictionEl = element("battlePrediction");
     risk.textContent = predict.text;
     risk.className = `battle-risk ${predict.className}`;
     predictionEl.textContent = predict.text;
@@ -102,8 +112,8 @@ function render() {
    HEADER UI
 ===================================================== */
 function initHeaderBattleObserver() {
-    const header = document.getElementById("gameHeader");
-    const assaultPanel = document.getElementById("nextAssaultPanel");
+    const header = element("gameHeader");
+    const assaultPanel = element("nextAssaultPanel");
     if (!header || !assaultPanel) {
         console.error("Header Battle Observer initialize failed.", { header, assaultPanel, });
         return;
@@ -145,15 +155,15 @@ function initHeaderBattleObserver() {
 ===================================================== */
 function renderTown() {
     const town = townData();
-    document.getElementById("defenseSlotInfo").textContent =
-        `${town.line1 + town.line2}칸`;
-    document.getElementById("questSlotInfo").textContent = `${town.questSlots}개`;
-    document.getElementById("townLevelCard").textContent =
+    element("defenseSlotInfo").textContent =
+        `${deployedCount()}/${town.maxDeploy}명 · 슬롯 ${totalDefenseSlots(town)}칸`;
+    element("questSlotInfo").textContent = `${town.questSlots}개`;
+    element("townLevelCard").textContent =
         `Lv.${state.townLevel}`;
-    document.getElementById("questRankInfo").textContent =
+    element("questRankInfo").textContent =
         `Rank ${town.maxQuestRank}`;
-    const btn = document.getElementById("townUpgradeButton");
-    const info = document.getElementById("townNextInfo");
+    const btn = element("townUpgradeButton");
+    const info = element("townNextInfo");
     if (state.townLevel >= 5) {
         btn.textContent = "도시 최고 레벨";
         btn.disabled = true;
@@ -164,7 +174,7 @@ function renderTown() {
         const cost = townUpgradeCost();
         btn.disabled = false;
         btn.textContent = `도시 Lv.${state.townLevel + 1} 업그레이드 💰${cost}`;
-        info.textContent = `다음 단계: 방어 ${next.line1 + next.line2}칸 · 퀘스트 ${next.questSlots}개 · 퀘스트 Rank ${next.maxQuestRank}`;
+        info.textContent = `다음 단계: 최대 배치 ${next.maxDeploy}명 · 방어 슬롯 ${totalDefenseSlots(next)}칸 · 퀘스트 ${next.questSlots}개 · 퀘스트 Rank ${next.maxQuestRank}`;
     }
 }
 /* =====================================================
@@ -174,18 +184,17 @@ function renderDefensePosition(line) {
     for (const pos of LINE_POSITIONS) {
         const positionName = pos.charAt(0).toUpperCase() + pos.slice(1);
         const linePos = line.id + positionName;
-        const root = document.getElementById(linePos);
+        const root = element(linePos);
         // console.log(linePos, root);
         if (!root)
             continue;
         root.innerHTML = "";
         const slots = getLineState(line.id)[pos];
-        const active = activeSlots(linePos);
-        // console.log(linePos, active);
+        const capacity = positionCapacity(line.id, pos);
         for (let i = 0; i < 2; i++) {
             const div = document.createElement("div");
             div.className = "slot";
-            if (!active) {
+            if (i >= capacity) {
                 div.classList.add("locked");
                 div.textContent = "🔒";
             }
@@ -204,6 +213,8 @@ function renderDefensePosition(line) {
                 <br>
                 ${JOBS[adv.job].name}
                 Lv.${adv.level}
+                <br>
+                전투력 ${Math.round(advCombatPower(adv))}
                 <br>
                 HP ${Math.max(0, adv.hp)} / ${adv.maxHp} (${hpPercent}%)
                 <br>
@@ -227,113 +238,30 @@ function renderDefensePosition(line) {
                     div.textContent = "빈 슬롯";
                 }
             }
-            if (active) {
-                div.onclick = () => assignSlot(linePos, i);
+            if (i < capacity) {
+                div.onclick = () => assignSlot(line.id, pos, i);
             }
             root.appendChild(div);
         }
     }
     const slots = getLineAdvIds(line.id);
     const synergy = lineSynergy(slots);
-    const synergyEl = document.getElementById(line.id + "Synergy");
+    const synergyEl = element(line.id + "Synergy");
     if (!synergyEl)
         return;
     synergyEl.classList.toggle("hidden", synergy.effects.length === 0);
     synergyEl.innerHTML = synergy.effects.map((effect) => `✨ ${effect}`).join("<br>");
 }
-function renderDefense(line) {
-    const root = document.getElementById(line);
-    if (!root)
-        return;
-    root.innerHTML = "";
-    console.log(state);
-    const slots = state[line] ?? [];
-    console.log(slots);
-    const active = activeSlots(line);
-    for (let i = 0; i < 2; i++) {
-        const div = document.createElement("div");
-        div.className = "slot";
-        if (i >= active) {
-            div.classList.add("locked");
-            div.textContent = "🔒";
-        }
-        else if (slots[i]) {
-            const adv = getAdv(slots[i]);
-            const hpPercent = Math.max(0, Math.min(100, Math.round((adv.hp / adv.maxHp) * 100)));
-            const expNeed = requiredExp(adv.level);
-            const expPercent = Math.max(0, Math.min(100, Math.round((adv.exp / expNeed) * 100)));
-            if (adv) {
-                div.classList.add("occupied");
-                div.innerHTML = `
-                <div>
-                <strong>${adv.name}</strong>
-                <br>
-                ${JOBS[adv.job].name}
-                Lv.${adv.level}
-                <br>
-                HP ${Math.max(0, adv.hp)} / ${adv.maxHp} (${hpPercent}%)
-                <br>
-                    EXP ${expPercent}% 
-                    <div class="exp-bar">
-                        <div class="exp-fill" style="width:${expPercent}%"></div>
-                    </div>
-                </div>
-                `;
-            }
-            if (hpPercent <= 30) {
-                div.classList.add("low-hp");
-            }
-        }
-        else {
-            if (selectedId) {
-                div.classList.add("possible");
-                div.textContent = "배치";
-            }
-            else {
-                div.textContent = "빈 슬롯";
-            }
-        }
-        if (i < active) {
-            div.onclick = () => assignSlot(line, i);
-        }
-        root.appendChild(div);
-    }
-    const synergy = lineSynergy(slots);
-    const synergyEl = document.getElementById(line + "Synergy");
-    if (synergy.effects.length > 0) {
-        synergyEl.classList.remove("hidden");
-        synergyEl.innerHTML = synergy.effects
-            .map((effect) => `✨ ${effect}`)
-            .join("<br>");
-    }
-    else {
-        synergyEl.classList.add("hidden");
-    }
-    // if(
-    //     synergy.name
-    // ){
-    //     synergyEl.classList.remove(
-    //         "hidden"
-    //     );
-    //     synergyEl.textContent=
-    //         ` ${synergy.name}`;
-    // }
-    // else {
-    //     synergyEl.classList.add(
-    //         "hidden"
-    //     );
-    // }
-}
 /* =====================================================
    ADVENTURER UI
 ===================================================== */
 function renderWaiting() {
-    const root = document.getElementById("waiting");
+    const root = element("waiting");
     root.innerHTML = "";
     const waiting = waitingAdventurers();
-    document.getElementById("waitingCount").textContent =
+    element("waitingCount").textContent =
         `대기 ${waiting.length}/${waitingCapacity()} · 방어/원정 중인 모험가는 별도 공간을 차지하지 않습니다.`;
-    document.getElementById("hireCost").textContent = hireCost();
+    element("hireCost").textContent = String(hireCost());
     for (const adv of waiting) {
         const job = JOBS[adv.job];
         const card = document.createElement("div");
@@ -390,7 +318,7 @@ function renderWaiting() {
         card.onclick = () => selectAdventurer(adv.id);
         root.appendChild(card);
     }
-    const actions = document.getElementById("selectedActions");
+    const actions = element("selectedActions");
     actions.innerHTML = "";
     if (selectedId) {
         const adv = getAdv(selectedId);
@@ -411,9 +339,9 @@ function renderWaiting() {
    QUEST UI
 ===================================================== */
 function renderQuests() {
-    const root = document.getElementById("quests");
+    const root = element("quests");
     root.innerHTML = "";
-    document.getElementById("questBoardInfo").textContent =
+    element("questBoardInfo").textContent =
         `현재 퀘스트 슬롯 ${state.questBoard.length}/${townData().questSlots} · 도시 Lv.${state.townLevel}에서는 Rank ${townData().maxQuestRank}까지 등장`;
     /* ACTIVE */
     for (const active of state.activeQuests) {
@@ -477,7 +405,9 @@ function renderQuests() {
         퀘스트 파견
         </button>
         `;
-        div.querySelector("button").onclick = () => sendQuest(q.id);
+        const sendButton = div.querySelector("button");
+        if (sendButton)
+            sendButton.onclick = () => sendQuest(q.id);
         root.appendChild(div);
     }
 }
@@ -485,9 +415,9 @@ function renderQuests() {
    GRAVE UI
 ===================================================== */
 function renderGraveyard() {
-    document.getElementById("graveCount").textContent =
+    element("graveCount").textContent =
         `묘지 ${state.graveyard.length}/${graveCapacity()}`;
-    const root = document.getElementById("graveyard");
+    const root = element("graveyard");
     root.innerHTML = "";
     for (const id of state.graveyard) {
         const adv = getAdv(id);
@@ -552,18 +482,18 @@ function renderGraveyard() {
    LOG UI
 ===================================================== */
 function renderLogs() {
-    document.getElementById("log").innerHTML = state.logs
+    element("log").innerHTML = state.logs
         .slice()
         .reverse()
         .join("<br>");
-    document.getElementById("waveButton").disabled = state.gameOver;
+    element("waveButton").disabled = state.gameOver;
 }
 /* =====================================================
    WAVE RESULT UI
 ===================================================== */
 function showWaveResult(result) {
-    const modal = document.getElementById("wave-result-modal");
-    const content = document.getElementById("wave-result-content");
+    const modal = element("wave-result-modal");
+    const content = element("wave-result-content");
     const adventurers = Object.values(result.adventurers);
     let html = `
     <h2>WAVE ${result.wave} 결과</h2>
@@ -632,19 +562,19 @@ function showWaveResult(result) {
     modal.classList.remove("hidden");
 }
 function closeWaveResult() {
-    document.getElementById("wave-result-modal").classList.add("hidden");
+    element("wave-result-modal").classList.add("hidden");
 }
 /* =====================================================
    GAME OVER UI
 ===================================================== */
 function renderGameOver() {
-    const panel = document.getElementById("gameOverPanel");
+    const panel = element("gameOverPanel");
     if (!state.gameOver) {
         panel.classList.add("hidden");
         return;
     }
     panel.classList.remove("hidden");
-    const root = document.getElementById("inheritList");
+    const root = element("inheritList");
     root.innerHTML = `
     <div class="small">
     승계 ${state.inheritanceSelection.length}/${inheritanceCapacity()}

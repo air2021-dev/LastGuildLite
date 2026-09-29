@@ -9,8 +9,8 @@ let selectedId: AdventurerId | null = null;
 let currentWaveResult: WaveResult | null = null;
 
 // let activeTab="adventurer";
-let activePeopleTab = "adventurer";
-let activeWorldTab = "town";
+let activePeopleTab: "adventurer" | "grave" = "adventurer";
+let activeWorldTab: "town" | "quest" = "town";
 
 /* =====================================================
    META / RUN
@@ -203,8 +203,8 @@ function normalizeLineState(rawLine: unknown, legacyRear: unknown, legacyFront: 
   };
 }
 
-function migrateRunState(raw: Record<string, any>): GameState {
-  const migrated = raw as GameState & Record<string, any>;
+function migrateRunState(raw: Record<string, unknown>): GameState {
+  const migrated = raw as unknown as GameState & Record<string, unknown>;
   migrated.line1 = normalizeLineState(raw.line1, raw.line1Rear, raw.line1Front);
   migrated.line2 = normalizeLineState(raw.line2, raw.line2Rear, raw.line2Front);
 
