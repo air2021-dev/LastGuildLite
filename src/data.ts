@@ -364,11 +364,13 @@ const SYNERGIES = [
     id: "",
     name: "",
 
-    requires: {
-      warrior: 1,
-      archer: 1,
-      mage: 1,
-      priest: 1,
+    condition: {
+      jobs: {
+        warrior: 1,
+        archer: 1,
+        mage: 1,
+        priest: 1,
+      },
     },
 
     effects: [
@@ -382,12 +384,14 @@ const SYNERGIES = [
   }, // template
 
   {
-    id: "cover_fire",
+    id: "cover",
     name: "엄호",
 
-    requires: {
-      warrior: 1,
-      archer: 1,
+    condition: {
+      jobs: {
+        warrior: 1,
+        archer: 1,
+      },
     },
 
     effects: [
@@ -401,12 +405,14 @@ const SYNERGIES = [
   },
 
   {
-    id: "magic_barrier",
-    name: "마법 방벽",
+    id: "magic_guard",
+    name: "마법 협공",
 
-    requires: {
-      warrior: 1,
-      mage: 1,
+    condition: {
+      jobs: {
+        warrior: 1,
+        mage: 1,
+      },
     },
 
     effects: [
@@ -429,8 +435,10 @@ const SYNERGIES = [
     id: "focused_fire",
     name: "집중 사격",
 
-    requires: {
-      archer: 2,
+    condition: {
+      jobs: {
+        archer: 2,
+      },
     },
 
     effects: [
@@ -447,8 +455,10 @@ const SYNERGIES = [
     id: "mana_resonance",
     name: "마법 공명",
 
-    requires: {
-      mage: 2,
+    condition: {
+      jobs: {
+        mage: 2,
+      },
     },
 
     effects: [
@@ -465,20 +475,48 @@ const SYNERGIES = [
     id: "balanced_party",
     name: "균형 파티",
 
-    requires: {
-      warrior: 1,
-      archer: 1,
-      mage: 1,
+    condition: {
+      jobs: {
+        warrior: 1,
+        archer: 1,
+        mage: 1,
+      },
     },
 
     effects: [
       {
         target: "ally",
+        job: "warrior",
         stat: "attack",
         value: 0.10,
       },
       {
         target: "ally",
+        job: "archer",
+        stat: "attack",
+        value: 0.10,
+      },
+      {
+        target: "ally",
+        job: "mage",
+        stat: "attack",
+        value: 0.10,
+      },
+      {
+        target: "ally",
+        job: "warrior",
+        stat: "defense",
+        value: 0.10,
+      },
+      {
+        target: "ally",
+        job: "archer",
+        stat: "defense",
+        value: 0.10,
+      },
+      {
+        target: "ally",
+        job: "mage",
         stat: "defense",
         value: 0.10,
       },
