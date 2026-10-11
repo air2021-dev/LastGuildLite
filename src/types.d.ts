@@ -101,6 +101,22 @@ interface LinePlacement {
   position: Position;
 }
 
+interface SynergyData {
+  id: string;
+  name: string;
+  condition: {
+    jobs: Partial<Record<JobId, number>>;
+    positions?: Partial<Record<Position, number>>;
+  };
+  effects: {
+    target: "ally" | "enemy";
+    job?: JobId;
+    position?: Position;
+    stat: PositionStat;
+    value: number;
+  }[];
+}
+
 interface SynergyResult {
   allAttack: number;
   allDefense: number;
@@ -110,6 +126,8 @@ interface SynergyResult {
   archerDefense: number;
   mageAttack: number;
   mageDefense: number;
+  priestAttack: number;
+  priestDefense: number;
   effects: string[];
 }
 

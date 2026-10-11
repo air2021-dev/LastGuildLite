@@ -193,6 +193,7 @@ function lineSynergy(slots) {
         .map(getAdv)
         .filter((adv) => adv !== undefined);
     const jobs = adventurers.map((a) => a.job);
+    const active = getActiveSynergy(slots);
     const result = {
         allAttack: 1,
         allDefense: 1,
@@ -202,49 +203,87 @@ function lineSynergy(slots) {
         archerDefense: 1,
         mageAttack: 1,
         mageDefense: 1,
+        priestAttack: 1,
+        priestDefense: 1,
         effects: [],
     };
-    const warriors = jobs.filter((j) => j === "warrior").length;
-    const archers = jobs.filter((j) => j === "archer").length;
-    const mages = jobs.filter((j) => j === "mage").length;
-    /*
-      전사 + 궁수
-      궁수가 보호받음
-      */
-    if (warriors >= 1 && archers >= 1) {
-        result.archerDefense *= 1.25;
-        result.effects.push("엄호: 궁수 방어 +25%");
+    for (const synergy of active) {
+        const effects = synergy.effects;
+        result.effects.push(synergy.name);
+        for (const effect of effects) {
+            if (effect.target === "ally") {
+                if (effect.job) {
+                    if (effect.stat === "attack") {
+                        if (effect.job === "warrior")
+                            result.warriorAttack *= 1 + effect.value;
+                        if (effect.job === "archer")
+                            result.archerAttack *= 1 + effect.value;
+                        if (effect.job === "mage")
+                            result.mageAttack *= 1 + effect.value;
+                        if (effect.job === "priest")
+                            result.priestAttack *= 1 + effect.value;
+                    }
+                    if (effect.stat === "defense") {
+                        if (effect.job === "warrior")
+                            result.warriorDefense *= 1 + effect.value;
+                        if (effect.job === "archer")
+                            result.archerDefense *= 1 + effect.value;
+                        if (effect.job === "mage")
+                            result.mageDefense *= 1 + effect.value;
+                        if (effect.job === "priest")
+                            result.priestDefense *= 1 + effect.value;
+                    }
+                    // if (effect.stat === "heal") {
+                    //   if (effect.job === "warrior") result.warriorHeal *= 1 + effect.value;
+                    //   if (effect.job === "archer") result.archerHeal *= 1 + effect.value;
+                    //   if (effect.job === "mage") result.mageHeal *= 1 + effect.value;
+                    //   if (effect.job === "priest") result.priestHeal *= 1 + effect.value;
+                    // }
+                }
+            }
+        }
     }
-    /*
-      전사 + 마법사
-      */
-    if (warriors >= 1 && mages >= 1) {
-        result.mageAttack *= 1.15;
-        result.warriorDefense *= 1.1;
-        result.effects.push("마법 방벽: 마법사 공격 +15%, 전사 방어 +10%");
-    }
-    /*
-      궁수 2명 이상
-      */
-    if (archers >= 2) {
-        result.archerAttack *= 1.2;
-        result.effects.push("집중 사격: 궁수 공격 +20%");
-    }
-    /*
-      마법사 2명 이상
-      */
-    if (mages >= 2) {
-        result.mageAttack *= 1.25;
-        result.effects.push("마력 공명: 마법사 공격 +25%");
-    }
-    /*
-      전사 + 궁수 + 마법사
-      */
-    if (warriors >= 1 && archers >= 1 && mages >= 1) {
-        result.allAttack *= 1.1;
-        result.allDefense *= 1.1;
-        result.effects.push("균형 파티: 전체 공격/방어 +10%");
-    }
+    // const warriors = jobs.filter((j) => j === "warrior").length;
+    // const archers = jobs.filter((j) => j === "archer").length;
+    // const mages = jobs.filter((j) => j === "mage").length;
+    // /*
+    //   전사 + 궁수
+    //   궁수가 보호받음
+    //   */
+    // if (warriors >= 1 && archers >= 1) {
+    //   result.archerDefense *= 1.25;
+    //   result.effects.push("엄호: 궁수 방어 +25%");
+    // }
+    // /*
+    //   전사 + 마법사
+    //   */
+    // if (warriors >= 1 && mages >= 1) {
+    //   result.mageAttack *= 1.15;
+    //   result.warriorDefense *= 1.1;
+    //   result.effects.push("마법 방벽: 마법사 공격 +15%, 전사 방어 +10%");
+    // }
+    // /*
+    //   궁수 2명 이상
+    //   */
+    // if (archers >= 2) {
+    //   result.archerAttack *= 1.2;
+    //   result.effects.push("집중 사격: 궁수 공격 +20%");
+    // }
+    // /*
+    //   마법사 2명 이상
+    //   */
+    // if (mages >= 2) {
+    //   result.mageAttack *= 1.25;
+    //   result.effects.push("마력 공명: 마법사 공격 +25%");
+    // }
+    // /*
+    //   전사 + 궁수 + 마법사
+    //   */
+    // if (warriors >= 1 && archers >= 1 && mages >= 1) {
+    //   result.allAttack *= 1.1;
+    //   result.allDefense *= 1.1;
+    //   result.effects.push("균형 파티: 전체 공격/방어 +10%");
+    // }
     return result;
 }
 function effectiveAttack(adv, synergy) {
@@ -274,6 +313,22 @@ function effectiveDefense(adv, synergy) {
     }
     multiplier *= getPositionBonus(adv, "defense");
     return adv.defense * multiplier;
+}
+function getActiveSynergy(advIds) {
+    const adventuerers = advIds.map(getAdv).filter((adv) => adv != null);
+    return SYNERGIES.filter(synergy => isSynergyActive(adventuerers, synergy));
+}
+function isSynergyActive(adventurers, synergy) {
+    const jobCounts = {};
+    for (const adv of adventurers) {
+        jobCounts[adv.job] = (jobCounts[adv.job] || 0) + 1;
+    }
+    for (const [job, requiredCount] of Object.entries(synergy.condition.jobs)) {
+        if ((jobCounts[job] ?? 0) < requiredCount) {
+            return false;
+        }
+    }
+    return true;
 }
 /* =====================================================
    POWER

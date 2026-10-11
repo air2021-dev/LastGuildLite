@@ -359,7 +359,7 @@ const QUEST_POOL = [
    SYNERGIES
 ===================================================== */
 
-const SYNERGIES = [
+const SYNERGIES: readonly SynergyData[] = [
   {
     id: "",
     name: "",
@@ -375,9 +375,9 @@ const SYNERGIES = [
 
     effects: [
       {
-        target: "",
-        job: "",
-        stat: "",
+        target: "ally",
+        job: "warrior",
+        stat: "attack",
         value: 0.0,
       },
     ],

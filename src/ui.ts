@@ -338,6 +338,7 @@ function renderDefensePosition(line: LineDefinition): void {
   const synergy = lineSynergy(slots);
   const synergyEl = element(line.id + "Synergy");
 
+  console.log("synergy Element", slots, synergyEl, synergy, synergy.effects.length);
   if (!synergyEl) return;
   synergyEl.classList.toggle("hidden", synergy.effects.length === 0);
   synergyEl.innerHTML = synergy.effects.map((effect) => `✨ ${effect}`).join("<br>");
