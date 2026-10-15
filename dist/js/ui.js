@@ -247,7 +247,7 @@ function renderDefensePosition(line) {
     const slots = getLineAdvIds(line.id);
     const synergy = lineSynergy(slots);
     const synergyEl = element(line.id + "Synergy");
-    console.log("synergy Element", slots, synergyEl, synergy, synergy.effects.length);
+    // console.log("synergy Element", slots, synergyEl, synergy, synergy.effects.length);
     if (!synergyEl)
         return;
     synergyEl.classList.toggle("hidden", synergy.effects.length === 0);
@@ -564,6 +564,39 @@ function showWaveResult(result) {
 }
 function closeWaveResult() {
     element("wave-result-modal").classList.add("hidden");
+}
+/* =====================================================
+   POPUP UI
+===================================================== */
+function showPopup(options) {
+    const modal = document.getElementById("popup-modal");
+    const titleEl = document.getElementById("popup-title");
+    const messageEl = document.getElementById("popup-message");
+    const confirmBtn = document.getElementById("popup-confirm");
+    const cancelBtn = document.getElementById("popup-cancel");
+    if (!modal || !titleEl || !messageEl || !confirmBtn || !cancelBtn) {
+        console.error("Popup UI elements not found.", { modal, titleEl, messageEl, confirmBtn, cancelBtn });
+        return;
+    }
+    titleEl.textContent = options.title;
+    messageEl.textContent = options.message;
+    confirmBtn.textContent = options.confirmText ?? "확인";
+    cancelBtn.textContent = options.cancelText ?? "취소";
+    confirmBtn.onclick = () => {
+        hidePopup();
+        // modal.classList.add("hidden");
+        options.onConfirm?.();
+    };
+    cancelBtn.onclick = () => {
+        hidePopup();
+        // modal.classList.add("hidden");
+        options.onCancel?.();
+    };
+    cancelBtn.style.display = options.type === "confirm" ? "" : "none";
+    modal.classList.remove("hidden");
+}
+function hidePopup() {
+    document.getElementById("popup-modal")?.classList.add("hidden");
 }
 /* =====================================================
    GAME OVER UI

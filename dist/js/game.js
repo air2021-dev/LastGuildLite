@@ -122,12 +122,22 @@ function hire() {
         return;
     console.log("Hiring adventurer...");
     if (waitingAdventurers().length >= waitingCapacity()) {
-        alert("모험가 대기소가 가득 찼습니다.");
+        showPopup({
+            title: "고용불가",
+            message: "모험가 대기소가 가득 찼습니다.",
+            type: "warning",
+        });
+        // alert("모험가 대기소가 가득 찼습니다.");
         return;
     }
     const cost = hireCost();
     if (state.gold < cost) {
-        alert("골드가 부족합니다.");
+        showPopup({
+            title: "고용불가",
+            message: "골드가 부족합니다.",
+            type: "warning",
+        });
+        // alert("골드가 부족합니다.");
         return;
     }
     state.gold -= cost;
@@ -171,7 +181,12 @@ function assignSlot(lineId, position, index) {
     if (!selectedId)
         return;
     if (deployedCount() >= townData().maxDeploy) {
-        alert(`현재 도시에서는 최대 ${townData().maxDeploy}명까지 방어에 배치할 수 있습니다.`);
+        showPopup({
+            title: "배치불가",
+            message: `현재 도시에서는 최대 ${townData().maxDeploy}명까지 방어에 배치할 수 있습니다.`,
+            type: "warning",
+        });
+        // alert(`현재 도시에서는 최대 ${townData().maxDeploy}명까지 방어에 배치할 수 있습니다.`);
         return;
     }
     const adv = getAdv(selectedId);
@@ -384,7 +399,7 @@ function battlePrediction() {
    QUEST BOARD
 ===================================================== */
 function availableQuestPool() {
-    return QUEST_POOL.filter((q) => q.rank <= townData().maxQuestRank);
+    return QUEST_POOL.filter((q) => q.minTownLevel <= townData().maxQuestRank);
 }
 function createQuest() {
     const pool = availableQuestPool();
@@ -392,13 +407,13 @@ function createQuest() {
     const variance = randomRange(0.9, 1.15);
     return {
         id: uid(),
-        rank: template.rank,
+        rank: template.minTownLevel,
         name: template.name,
-        duration: template.duration,
-        expiry: template.expiry,
-        remainingExpiry: template.expiry,
+        duration: template.durationWave,
+        expiry: template.reward.expiry,
+        remainingExpiry: template.reward.expiry,
         power: Math.round(template.power * variance),
-        reward: Math.round(template.reward * variance),
+        reward: Math.round(template.reward.gold * variance),
     };
 }
 function refreshQuestBoard() {
@@ -439,7 +454,12 @@ function riskText(adv, quest) {
 ===================================================== */
 function sendQuest(questId) {
     if (!selectedId) {
-        alert("모험가를 먼저 선택하세요.");
+        showPopup({
+            title: "파견불가",
+            message: "모험가를 먼저 선택하세요.",
+            type: "warning",
+        });
+        // alert("모험가를 먼저 선택하세요.");
         return;
     }
     const adv = getAdv(selectedId);
@@ -447,7 +467,12 @@ function sendQuest(questId) {
         return;
     const hpRate = adv.hp / adv.maxHp;
     if (hpRate <= CONFIG.questMinHpRate) {
-        alert(`${adv.name}의 체력이 낮아 퀘스트에 파견할 수 없습니다.`);
+        showPopup({
+            title: "파견불가",
+            message: `${adv.name}의 체력이 낮아 퀘스트에 파견할 수 없습니다.`,
+            type: "warning",
+        });
+        // alert(`${adv.name}의 체력이 낮아 퀘스트에 파견할 수 없습니다.`);
         return;
     }
     const quest = state.questBoard.find((q) => q.id === questId);
@@ -664,7 +689,12 @@ function reviveGold(id) {
     if (state.gold <
         // CONFIG.reviveGold
         goldCost) {
-        alert("골드가 부족합니다.");
+        showPopup({
+            title: "소생불가",
+            message: "골드가 부족합니다.",
+            type: "warning"
+        });
+        // alert("골드가 부족합니다.");
         return;
     }
     state.gold -= goldCost;
@@ -693,11 +723,21 @@ function reviveGem(id) {
     if (state.meta.gem <
         // CONFIG.reviveGem
         reviveCost) {
-        alert("Gem이 부족합니다.");
+        showPopup({
+            title: "소생불가",
+            message: "보석이 부족합니다.",
+            type: "warning"
+        });
+        // alert("Gem이 부족합니다.");
         return;
     }
     if (waitingAdventurers().length >= waitingCapacity()) {
-        alert("대기소가 가득 찼습니다.");
+        showPopup({
+            title: "소생불가",
+            message: "대기소가 가득 찼습니다.",
+            type: "warning"
+        });
+        // alert("대기소가 가득 찼습니다.");
         return;
     }
     state.meta.gem -= reviveCost;
@@ -742,7 +782,7 @@ function recoverAdventurers() {
         let healRate = 0.0;
         let recoveryType = null;
         if (isDefending(adv.id)) {
-            healRate = CONFIG.frontlineHealRate * getPositionBonus(adv, "heal") + getLinePriestHealRate(adv.id);
+            healRate = CONFIG.frontlineHealRate * getPositionBonus(adv, "recovery") + getLinePriestHealRate(adv.id);
             recoveryType = "frontline";
         }
         else if (adv.status === "waiting") {
@@ -818,18 +858,32 @@ function townUpgradeCost() {
     const next = state.townLevel + 1;
     return CONFIG.townUpgradeCosts[next] ?? null;
 }
+function getTownUpgradeGemReward() {
+    return (ECONOMY.townLevelGemReward);
+}
+function grantTownUpgradeReward() {
+    const gemReward = getTownUpgradeGemReward();
+    state.meta.gem += gemReward;
+    log(`도시 업그레이드 보상으로 ${gemReward} Gem을 획득했습니다.`);
+}
 function upgradeTown() {
     if (state.townLevel >= 5)
         return;
     const cost = townUpgradeCost();
     if (state.gold < cost) {
-        alert("골드가 부족합니다.");
+        showPopup({
+            title: "도시증축불가",
+            message: "골드가 부족합니다.",
+            type: "warning"
+        });
+        // alert("골드가 부족합니다.");
         return;
     }
     state.gold -= cost;
     state.townLevel++;
     refreshQuestBoard();
     log(`도시가 Lv.${state.townLevel}로 성장했습니다.`);
+    grantTownUpgradeReward();
     save();
     render();
 }
@@ -913,6 +967,42 @@ function beginWaveResult() {
         };
     }
 }
+function getWaveGoldReward(wave) {
+    return (ECONOMY.waveGold.base + ECONOMY.waveGold.perWave * (wave - 1));
+}
+function getMilestoneReward(wave) {
+    const milestone = ECONOMY.milestone;
+    if (wave % milestone.interval === 0) {
+        return {
+            gold: milestone.goldReward,
+            gem: milestone.gemReward,
+        };
+    }
+    return null;
+}
+function grantWaveReward(wave) {
+    const gold = getWaveGoldReward(wave);
+    const milestoneReward = getMilestoneReward(wave);
+    if (currentWaveResult) {
+        currentWaveResult.goldBefore = state.gold;
+        currentWaveResult.gemBefore = state.meta.gem;
+    }
+    state.gold += gold;
+    if (milestoneReward) {
+        state.gold += milestoneReward.gold;
+        state.meta.gem += milestoneReward.gem;
+        log(`웨이브 ${wave} 달성 보상: +${milestoneReward.gold}G, +${milestoneReward.gem} Gem`);
+    }
+    log(`웨이브 ${wave} 종료. +${gold}G`);
+    if (currentWaveResult) {
+        currentWaveResult.goldAfter = state.gold;
+        currentWaveResult.gemAfter = state.meta.gem;
+    }
+    return {
+        gold: gold + (milestoneReward ? milestoneReward.gold : 0),
+        gem: milestoneReward ? milestoneReward.gem : 0,
+    };
+}
 function nextWave() {
     if (state.gameOver)
         return;
@@ -925,6 +1015,7 @@ function nextWave() {
     // recoverWaitingAdventurers();
     finishWaveResult();
     if (!state.gameOver) {
+        grantWaveReward(state.wave);
         state.wave++;
         refreshQuestBoard();
     }
@@ -962,8 +1053,6 @@ function finishWaveResult() {
     if (!currentWaveResult)
         return;
     currentWaveResult.townHpAfter = state.townHp;
-    currentWaveResult.goldAfter = state.gold;
-    currentWaveResult.gemAfter = state.meta.gem;
     for (const result of Object.values(currentWaveResult.adventurers)) {
         const adv = getAdv(result.id);
         if (adv) {
@@ -991,7 +1080,12 @@ function toggleInheritance(id) {
     }
     else {
         if (list.length >= inheritanceCapacity()) {
-            alert("승계 슬롯이 부족합니다.");
+            showPopup({
+                title: "승계불가",
+                message: "승계 슬롯이 부족합니다.",
+                type: "warning"
+            });
+            // alert("승계 슬롯이 부족합니다.");
             return;
         }
         list.push(id);

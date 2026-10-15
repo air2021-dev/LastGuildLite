@@ -1,15 +1,17 @@
 type Position = "front" | "rear";
-type PositionStat = "attack" | "defense" | "heal";
+type PositionStat = "attack" | "defense" | "recovery";
 type JobId = "warrior" | "archer" | "mage" | "priest";
 type LineId = "line1" | "line2";
 type AdventurerStatus = "waiting" | "defense" | "quest" | "dead" | "reviving";
 type AdventurerId = string;
 type Slot = AdventurerId | null;
+type QuestType = "normal" | "elite" | "boss";
+type PopupType = "info" | "warning" | "confirm";
 
 interface PositionBonus {
   attack: number;
   defense: number;
-  heal: number;
+  recovery: number;
 }
 
 interface JobData {
@@ -194,6 +196,47 @@ interface LineDefinition {
   id: LineId;
   label: string;
   positions: readonly Position[];
+}
+
+interface QuestData {
+  id: string;
+  name: string;
+
+  type: QuestType;
+
+  minTownLevel: number;
+  durationWave: number;
+
+  power: number;
+
+  reward: {
+    gold: number;
+    gem: number;
+    expiry: number;
+  };
+
+  requiredPartySize?: number;
+
+  requiredJobs?: Partial<Record<JobId, number>>;
+}
+
+interface QuestInstance {
+  id: string;
+  questId: string;
+
+  remainingWaves: number;
+
+  adventurerIds: AdventurerId[];
+};
+
+interface PopupOptions {
+  title: string;
+  message: string;
+  type?: PopupType;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }
 
 declare function render(): void;

@@ -958,3 +958,87 @@ h2 {
   border: 1px solid #555;
   border-radius: 12px;
 }
+
+/* =========================
+   POPUP MODAL
+========================= */
+
+.popup {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.popup.hidden {
+  display: none;
+}
+
+.popup-content {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 20px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #48505c;
+  border-radius: 10px;
+
+  background: #1b1f24;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+
+  text-align: center;
+}
+
+.popup-content h2 {
+  margin: 0 0 12px;
+
+  font-size: 18px;
+}
+
+.popup-content p {
+  margin: 0 0 18px;
+
+  line-height: 1.5;
+
+  white-space: pre-line;
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.popup-buttons button {
+  min-width: 80px;
+
+  padding: 8px 14px;
+
+  border: 1px solid #596270;
+  border-radius: 6px;
+
+  background: #292f37;
+
+  color: #fff;
+
+  cursor: pointer;
+}
+
+.popup-buttons button:hober {
+  background: #343b45;
+}
