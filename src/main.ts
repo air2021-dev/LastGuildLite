@@ -2,10 +2,12 @@
    START
 ===================================================== */
 
-function initGame(){
+function initGame() {
 
    load();
    // repairAdventurerData();
+
+   checkUpdateNotice();
    render();
    initHeaderBattleObserver();
 }

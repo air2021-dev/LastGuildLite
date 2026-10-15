@@ -154,7 +154,6 @@ function render() {
 
   renderGameOver();
 
-  checkUpdateNotice();
   // showUpdatePopup(UPDATE_NOTES);
 
   // openTab(
