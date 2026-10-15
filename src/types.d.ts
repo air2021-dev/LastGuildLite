@@ -229,6 +229,12 @@ interface QuestInstance {
   adventurerIds: AdventurerId[];
 };
 
+interface UpdateNote {
+  version: string;
+  title: string;
+  changes: string[];
+}
+
 interface PopupOptions {
   title: string;
   message: string;

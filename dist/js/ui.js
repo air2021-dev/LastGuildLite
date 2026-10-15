@@ -102,6 +102,8 @@ function render() {
     renderGraveyard();
     renderLogs();
     renderGameOver();
+    checkUpdateNotice();
+    // showUpdatePopup(UPDATE_NOTES);
     // openTab(
     //     activeTab
     // );
@@ -568,6 +570,19 @@ function closeWaveResult() {
 /* =====================================================
    POPUP UI
 ===================================================== */
+function showUpdatePopup(update) {
+    const message = update.changes.map(change => `･ ${change}`).join('\n');
+    showPopup({
+        title: `${update.title} v${update.version}`,
+        message,
+        type: "confirm",
+        confirmText: "다시 보지 않기",
+        onConfirm: () => {
+            localStorage.setItem(LAST_UPDATE_SEEN_VERSION_KEY, update.version);
+        },
+        cancelText: "확인",
+    });
+}
 function showPopup(options) {
     const modal = document.getElementById("popup-modal");
     const titleEl = document.getElementById("popup-title");
