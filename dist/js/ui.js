@@ -102,7 +102,6 @@ function render() {
     renderGraveyard();
     renderLogs();
     renderGameOver();
-    checkUpdateNotice();
     // showUpdatePopup(UPDATE_NOTES);
     // openTab(
     //     activeTab
